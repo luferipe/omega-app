@@ -46,7 +46,7 @@ export default function ImageUploader({
       const saveRes = await fetch(`/api/items/${itemId}/images`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ storageKey: key }),
+        body: JSON.stringify({ storageKey: key, url }),
         credentials: "same-origin",
       });
 

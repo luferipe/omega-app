@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSessionFromRequest } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { getPublicUrl, deleteObject } from "@/lib/minio";
+import { del } from "@vercel/blob";
 
 export async function POST(
   request: Request,
@@ -11,13 +11,11 @@ export async function POST(
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { itemId } = await params;
-  const { storageKey, altText, isPrimary } = await request.json();
+  const { storageKey, url, altText, isPrimary } = await request.json();
 
-  if (!storageKey) {
-    return NextResponse.json({ error: "storageKey required" }, { status: 400 });
+  if (!url) {
+    return NextResponse.json({ error: "url required" }, { status: 400 });
   }
-
-  const url = getPublicUrl(storageKey);
 
   if (isPrimary) {
     await prisma.itemImage.updateMany({
@@ -31,7 +29,7 @@ export async function POST(
   const image = await prisma.itemImage.create({
     data: {
       itemId,
-      storageKey,
+      storageKey: storageKey || url,
       url,
       altText: altText || null,
       isPrimary: isPrimary || count === 0,
@@ -56,9 +54,9 @@ export async function DELETE(
   if (!image) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   try {
-    await deleteObject(image.storageKey);
+    await del(image.url);
   } catch {
-    // Object may not exist in MinIO
+    // Blob may not exist
   }
 
   await prisma.itemImage.delete({ where: { id: imageId } });

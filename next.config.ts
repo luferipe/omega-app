@@ -19,6 +19,11 @@ const nextConfig: NextConfig = {
         hostname: "*.r2.cloudflarestorage.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "*.public.blob.vercel-storage.com",
+        pathname: "/**",
+      },
     ],
   },
 };
