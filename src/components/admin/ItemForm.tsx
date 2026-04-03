@@ -17,6 +17,7 @@ interface ItemData {
   vendorContact: string | null;
   vendorPhone: string | null;
   vendorRef: string | null;
+  videoUrl: string | null;
   specs: Spec[];
 }
 
@@ -96,6 +97,17 @@ export default function ItemForm({
             className="w-full px-3 py-2 rounded-lg text-sm outline-none focus:ring-1 focus:ring-[#c4a265] resize-none"
             style={inputStyle}
           />
+        </div>
+        <div>
+          <label className="block text-[10px] uppercase tracking-widest mb-1.5" style={labelStyle}>Video URL</label>
+          <input
+            name="videoUrl"
+            defaultValue={item.videoUrl || ""}
+            placeholder="YouTube, Vimeo, or direct video URL"
+            className="w-full px-3 py-2 rounded-lg text-sm outline-none focus:ring-1 focus:ring-[#c4a265]"
+            style={inputStyle}
+          />
+          <p className="text-[9px] mt-1" style={{ color: "#666" }}>Supports YouTube, Vimeo, or direct .mp4 links</p>
         </div>
       </div>
 

@@ -36,6 +36,7 @@ export default async function NewItemPage({
         vendorContact: (formData.get("vendorContact") as string) || null,
         vendorPhone: (formData.get("vendorPhone") as string) || null,
         vendorRef: (formData.get("vendorRef") as string) || null,
+        videoUrl: (formData.get("videoUrl") as string) || null,
         sortOrder: nextOrder,
       },
     });
@@ -69,7 +70,7 @@ export default async function NewItemPage({
           item={{
             name: "", category: null, roomLocation: null, finishType: null,
             description: null, vendorName: null, vendorContact: null,
-            vendorPhone: null, vendorRef: null, specs: [{ label: "", value: "" }],
+            vendorPhone: null, vendorRef: null, videoUrl: null, specs: [{ label: "", value: "" }],
           }}
           saveAction={createItem}
           deleteAction={async () => { "use server"; redirect(`/admin/projects/${projectId}/sections/${sectionId}`); }}

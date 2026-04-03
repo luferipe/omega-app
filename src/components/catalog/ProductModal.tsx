@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 interface Spec {
   id: string;
@@ -24,8 +24,25 @@ interface Item {
   vendorContact: string | null;
   vendorPhone: string | null;
   vendorRef: string | null;
+  videoUrl: string | null;
   specs: Spec[];
   images: Image[];
+}
+
+function getEmbedUrl(url: string): string | null {
+  // YouTube
+  const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
+  if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=0&rel=0`;
+
+  // Vimeo
+  const vimeoMatch = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  if (vimeoMatch) return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+
+  return null;
+}
+
+function isDirectVideo(url: string): boolean {
+  return /\.(mp4|webm|mov|ogg)(\?.*)?$/i.test(url);
 }
 
 export default function ProductModal({
@@ -35,6 +52,9 @@ export default function ProductModal({
   item: Item;
   onClose: () => void;
 }) {
+  const [activeImage, setActiveImage] = useState(0);
+  const [showVideo, setShowVideo] = useState(false);
+
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -53,6 +73,8 @@ export default function ProductModal({
 
   const hasImage = item.images.length > 0;
   const multipleImages = item.images.length > 1;
+  const embedUrl = item.videoUrl ? getEmbedUrl(item.videoUrl) : null;
+  const directVideo = item.videoUrl && isDirectVideo(item.videoUrl);
 
   return (
     <div
@@ -80,33 +102,103 @@ export default function ProductModal({
           </svg>
         </button>
 
-        {/* Image section */}
-        {hasImage && (
+        {/* Media section */}
+        {(hasImage || item.videoUrl) && (
           <div>
-            <div className="relative w-full" style={{ maxHeight: "60vh" }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={item.images[0].url}
-                alt={item.images[0].altText || item.name}
-                className="w-full object-contain"
-                style={{ maxHeight: "60vh" }}
-              />
-            </div>
-
-            {/* Thumbnail strip */}
-            {multipleImages && (
-              <div className="flex gap-2 px-6 py-3 overflow-x-auto" style={{ borderBottom: "1px solid rgba(255,255,255,.06)" }}>
-                {item.images.map((img) => (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    key={img.id}
-                    src={img.url}
-                    alt={img.altText || item.name}
-                    className="h-16 w-20 object-cover rounded-lg border flex-shrink-0 opacity-70 hover:opacity-100 transition-opacity cursor-pointer"
-                    style={{ borderColor: "rgba(255,255,255,.1)" }}
-                  />
-                ))}
+            {/* Video / Image toggle tabs */}
+            {item.videoUrl && hasImage && (
+              <div className="flex gap-1 px-6 pt-4">
+                <button
+                  onClick={() => setShowVideo(false)}
+                  className="text-[10px] px-3 py-1.5 rounded-md tracking-wider uppercase transition-colors"
+                  style={{
+                    background: !showVideo ? "rgba(196,162,101,.15)" : "rgba(255,255,255,.05)",
+                    color: !showVideo ? "#c4a265" : "#666",
+                    border: `1px solid ${!showVideo ? "rgba(196,162,101,.2)" : "transparent"}`,
+                  }}
+                >
+                  Photos
+                </button>
+                <button
+                  onClick={() => setShowVideo(true)}
+                  className="text-[10px] px-3 py-1.5 rounded-md tracking-wider uppercase transition-colors"
+                  style={{
+                    background: showVideo ? "rgba(196,162,101,.15)" : "rgba(255,255,255,.05)",
+                    color: showVideo ? "#c4a265" : "#666",
+                    border: `1px solid ${showVideo ? "rgba(196,162,101,.2)" : "transparent"}`,
+                  }}
+                >
+                  Video
+                </button>
               </div>
+            )}
+
+            {/* Video */}
+            {(showVideo || (!hasImage && item.videoUrl)) && item.videoUrl && (
+              <div className="w-full" style={{ aspectRatio: "16/9" }}>
+                {embedUrl ? (
+                  <iframe
+                    src={embedUrl}
+                    className="w-full h-full border-0"
+                    allow="autoplay; fullscreen; picture-in-picture"
+                    allowFullScreen
+                  />
+                ) : directVideo ? (
+                  <video
+                    src={item.videoUrl}
+                    controls
+                    className="w-full h-full object-contain"
+                    style={{ background: "#000" }}
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center" style={{ background: "#0a0a0e" }}>
+                    <a
+                      href={item.videoUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm underline"
+                      style={{ color: "#c4a265" }}
+                    >
+                      Open Video
+                    </a>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Image */}
+            {(!showVideo || !item.videoUrl) && hasImage && (
+              <>
+                <div className="relative w-full" style={{ maxHeight: "60vh" }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={item.images[activeImage].url}
+                    alt={item.images[activeImage].altText || item.name}
+                    className="w-full object-contain"
+                    style={{ maxHeight: "60vh" }}
+                  />
+                </div>
+
+                {/* Thumbnail strip */}
+                {multipleImages && (
+                  <div className="flex gap-2 px-6 py-3 overflow-x-auto" style={{ borderBottom: "1px solid rgba(255,255,255,.06)" }}>
+                    {item.images.map((img, i) => (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        key={img.id}
+                        src={img.url}
+                        alt={img.altText || item.name}
+                        onClick={() => setActiveImage(i)}
+                        className="h-16 w-20 object-cover rounded-lg border flex-shrink-0 transition-opacity cursor-pointer"
+                        style={{
+                          borderColor: i === activeImage ? "#c4a265" : "rgba(255,255,255,.1)",
+                          opacity: i === activeImage ? 1 : 0.5,
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}

@@ -34,6 +34,7 @@ export default async function ItemEditPage({
       vendorContact: formData.get("vendorContact") as string || null,
       vendorPhone: formData.get("vendorPhone") as string || null,
       vendorRef: formData.get("vendorRef") as string || null,
+      videoUrl: formData.get("videoUrl") as string || null,
     };
 
     // Parse specs JSON
@@ -99,6 +100,7 @@ export default async function ItemEditPage({
             vendorContact: item.vendorContact,
             vendorPhone: item.vendorPhone,
             vendorRef: item.vendorRef,
+            videoUrl: item.videoUrl,
             specs: item.specs.map((s) => ({ label: s.label, value: s.value })),
           }}
           saveAction={saveItem}

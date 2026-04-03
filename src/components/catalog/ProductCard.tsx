@@ -25,6 +25,7 @@ interface Item {
   vendorContact: string | null;
   vendorPhone: string | null;
   vendorRef: string | null;
+  videoUrl: string | null;
   specs: Spec[];
   images: Image[];
 }
@@ -90,6 +91,16 @@ export default function ProductCard({ item }: { item: Item }) {
               style={{ background: "rgba(0,0,0,.6)", backdropFilter: "blur(8px)", color: "#888" }}
             >
               {item.roomLocation}
+            </span>
+          )}
+          {item.videoUrl && (
+            <span
+              className="absolute bottom-3 right-3 w-8 h-8 flex items-center justify-center rounded-full"
+              style={{ background: "rgba(0,0,0,.6)", backdropFilter: "blur(8px)" }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="#c4a265">
+                <path d="M8 5v14l11-7z" />
+              </svg>
             </span>
           )}
         </div>
