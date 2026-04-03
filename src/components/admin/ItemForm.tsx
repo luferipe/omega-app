@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { upload } from "@vercel/blob/client";
 
 interface Spec {
   label: string;
@@ -56,6 +57,9 @@ export default function ItemForm({
   deleteAction: () => void;
 }) {
   const [specs, setSpecs] = useState<Spec[]>(item.specs.length > 0 ? item.specs : [{ label: "", value: "" }]);
+  const [videoUrl, setVideoUrl] = useState(item.videoUrl || "");
+  const [videoUploading, setVideoUploading] = useState(false);
+  const videoRef = useRef<HTMLInputElement>(null);
 
   function addSpec() {
     setSpecs([...specs, { label: "", value: "" }]);
@@ -99,15 +103,54 @@ export default function ItemForm({
           />
         </div>
         <div>
-          <label className="block text-[10px] uppercase tracking-widest mb-1.5" style={labelStyle}>Video URL</label>
+          <label className="block text-[10px] uppercase tracking-widest mb-1.5" style={labelStyle}>Video</label>
+          <div className="flex gap-2">
+            <input
+              name="videoUrl"
+              value={videoUrl}
+              onChange={(e) => setVideoUrl(e.target.value)}
+              placeholder="YouTube, Vimeo URL, or upload MP4"
+              className="flex-1 px-3 py-2 rounded-lg text-sm outline-none focus:ring-1 focus:ring-[#c4a265]"
+              style={inputStyle}
+            />
+            <button
+              type="button"
+              disabled={videoUploading}
+              onClick={() => videoRef.current?.click()}
+              className="px-3 py-2 rounded-lg text-[10px] uppercase tracking-wider whitespace-nowrap"
+              style={{ background: "rgba(196,162,101,.15)", color: "#c4a265", border: "1px solid rgba(196,162,101,.2)" }}
+            >
+              {videoUploading ? "Uploading..." : "Upload MP4"}
+            </button>
+          </div>
           <input
-            name="videoUrl"
-            defaultValue={item.videoUrl || ""}
-            placeholder="YouTube, Vimeo, or direct video URL"
-            className="w-full px-3 py-2 rounded-lg text-sm outline-none focus:ring-1 focus:ring-[#c4a265]"
-            style={inputStyle}
+            ref={videoRef}
+            type="file"
+            accept="video/mp4,video/webm,video/quicktime"
+            className="hidden"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              setVideoUploading(true);
+              try {
+                const blob = await upload(file.name, file, {
+                  access: "public",
+                  handleUploadUrl: "/api/upload-video",
+                });
+                setVideoUrl(blob.url);
+              } catch (err) {
+                alert(`Upload failed: ${err instanceof Error ? err.message : "Unknown error"}`);
+              }
+              setVideoUploading(false);
+              e.target.value = "";
+            }}
           />
-          <p className="text-[9px] mt-1" style={{ color: "#666" }}>Supports YouTube, Vimeo, or direct .mp4 links</p>
+          {videoUrl && videoUrl.match(/\.(mp4|webm|mov)(\?.*)?$/i) && (
+            <div className="mt-2 rounded-lg overflow-hidden" style={{ maxHeight: 200 }}>
+              <video src={videoUrl} controls className="w-full" style={{ maxHeight: 200 }} />
+            </div>
+          )}
+          <p className="text-[9px] mt-1" style={{ color: "#666" }}>Upload MP4 or paste YouTube/Vimeo link</p>
         </div>
       </div>
 
