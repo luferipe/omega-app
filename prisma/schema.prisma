@@ -1,0 +1,95 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         String   @default("admin")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Project {
+  id            String    @id @default(cuid())
+  name          String
+  slug          String    @unique
+  client        String?
+  address       String?
+  standard      String?
+  coverImage    String?
+  matterportUrl String?
+  published     Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sections      Section[]
+}
+
+model Section {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  name      String
+  slug      String
+  subtitle  String?
+  heroImage String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  items     Item[]
+
+  @@unique([projectId, slug])
+  @@index([projectId, sortOrder])
+}
+
+model Item {
+  id            String      @id @default(cuid())
+  sectionId     String
+  section       Section     @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  name          String
+  category      String?
+  roomLocation  String?
+  description   String?
+  finishType    String?
+  vendorName    String?
+  vendorContact String?
+  vendorPhone   String?
+  vendorRef     String?
+  sortOrder     Int         @default(0)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  specs         ItemSpec[]
+  images        ItemImage[]
+
+  @@index([sectionId, sortOrder])
+}
+
+model ItemSpec {
+  id        String @id @default(cuid())
+  itemId    String
+  item      Item   @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  label     String
+  value     String
+  sortOrder Int    @default(0)
+
+  @@index([itemId, sortOrder])
+}
+
+model ItemImage {
+  id         String  @id @default(cuid())
+  itemId     String
+  item       Item    @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  storageKey String
+  url        String
+  altText    String?
+  isPrimary  Boolean @default(false)
+  sortOrder  Int     @default(0)
+
+  @@index([itemId])
+}
