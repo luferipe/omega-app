@@ -40,7 +40,7 @@ export async function GET(
     return new NextResponse(uint8, {
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="${project.slug}-catalog.pdf"`,
+        "Content-Disposition": `inline; filename="${project.slug}-catalog.pdf"`,
       },
     });
   } catch (err) {

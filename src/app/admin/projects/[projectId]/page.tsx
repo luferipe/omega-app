@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import AdminShell from "@/components/admin/AdminShell";
+import PdfViewerModal from "@/components/admin/PdfViewerModal";
 
 export default async function ProjectDetailPage({ params }: { params: Promise<{ projectId: string }> }) {
   const { projectId } = await params;
@@ -64,13 +65,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               View Catalog
             </Link>
           )}
-          <a
-            href={`/api/pdf/${projectId}`}
-            className="px-4 py-2 rounded-lg text-xs tracking-wider uppercase"
-            style={{ background: "rgba(255,255,255,.05)", color: "#bbb", border: "1px solid rgba(255,255,255,.08)" }}
-          >
-            Download PDF
-          </a>
+          <PdfViewerModal projectId={projectId} projectSlug={project.slug} projectName={project.name} />
           {project.published && (
             <Link
               href={`/catalog/${project.slug}/qr`}
