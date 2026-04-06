@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
+import { useUI } from "@/components/ui/ConfirmDialog";
 
 interface UploadedImage {
   id: string;
@@ -20,6 +21,7 @@ export default function ImageUploader({
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const { confirm, notify } = useUI();
 
   const uploadFile = useCallback(async (file: File) => {
     setUploading(true);
@@ -59,19 +61,26 @@ export default function ImageUploader({
       setImages((prev) => [...prev, { id: image.id, url: url || image.url, storageKey: key, isPrimary: image.isPrimary }]);
     } catch (err) {
       console.error("Upload failed:", err);
-      alert(`Upload failed: ${err instanceof Error ? err.message : "Unknown error"}`);
+      notify(`Upload failed: ${err instanceof Error ? err.message : "Unknown error"}`, "error");
     }
     setUploading(false);
-  }, [itemId]);
+  }, [itemId, notify]);
 
   async function handleDelete(imageId: string) {
-    if (!confirm("Delete this image?")) return;
+    const ok = await confirm({
+      title: "Delete image",
+      message: "This image will be permanently removed. Continue?",
+      confirmLabel: "Delete",
+      variant: "danger",
+    });
+    if (!ok) return;
     await fetch(`/api/items/${itemId}/images`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ imageId }),
     });
     setImages((prev) => prev.filter((img) => img.id !== imageId));
+    notify("Image deleted");
   }
 
   function handleDrop(e: React.DragEvent) {

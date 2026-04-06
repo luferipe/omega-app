@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useUI } from "@/components/ui/ConfirmDialog";
 
 interface Sub {
   id: string;
@@ -40,6 +41,23 @@ export default function CategoryManager({
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [editing, setEditing] = useState<string | null>(null);
   const [addingSubTo, setAddingSubTo] = useState<string | null>(null);
+  const { confirm } = useUI();
+
+  async function handleDeleteClick(
+    e: React.MouseEvent<HTMLButtonElement>,
+    name: string,
+    extra: string
+  ) {
+    e.preventDefault();
+    const form = e.currentTarget.closest("form");
+    const ok = await confirm({
+      title: `Delete "${name}"`,
+      message: extra,
+      confirmLabel: "Delete",
+      variant: "danger",
+    });
+    if (ok && form) form.requestSubmit();
+  }
 
   function toggle(id: string) {
     const next = new Set(expanded);
@@ -167,11 +185,13 @@ export default function CategoryManager({
                         <input type="hidden" name="id" value={cat.id} />
                         <button
                           type="submit"
-                          onClick={(e) => {
-                            if (!confirm(`Delete "${cat.name}" and ${cat.children.length} subcategories? Items will be uncategorized.`)) {
-                              e.preventDefault();
-                            }
-                          }}
+                          onClick={(e) =>
+                            handleDeleteClick(
+                              e,
+                              cat.name,
+                              `This category and its ${cat.children.length} subcategories will be removed. Items in them will become uncategorized.`
+                            )
+                          }
                           className="text-[10px] px-2 py-1 rounded uppercase tracking-wider"
                           style={{ color: "#f87171" }}
                         >
@@ -265,11 +285,13 @@ export default function CategoryManager({
                                 <input type="hidden" name="id" value={sub.id} />
                                 <button
                                   type="submit"
-                                  onClick={(e) => {
-                                    if (!confirm(`Delete "${sub.name}"? Items will be uncategorized.`)) {
-                                      e.preventDefault();
-                                    }
-                                  }}
+                                  onClick={(e) =>
+                                    handleDeleteClick(
+                                      e,
+                                      sub.name,
+                                      "This subcategory will be removed. Items in it will become uncategorized."
+                                    )
+                                  }
                                   className="text-[10px] px-2 py-1 rounded uppercase tracking-wider"
                                   style={{ color: "#f87171" }}
                                 >

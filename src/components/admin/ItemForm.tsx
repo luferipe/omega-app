@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { upload } from "@vercel/blob/client";
+import { useUI } from "@/components/ui/ConfirmDialog";
 
 interface Spec {
   label: string;
@@ -69,6 +70,7 @@ export default function ItemForm({
   const [videoUrl, setVideoUrl] = useState(item.videoUrl || "");
   const [videoUploading, setVideoUploading] = useState(false);
   const videoRef = useRef<HTMLInputElement>(null);
+  const { confirm, notify } = useUI();
 
   function addSpec() {
     setSpecs([...specs, { label: "", value: "" }]);
@@ -170,7 +172,7 @@ export default function ItemForm({
                 });
                 setVideoUrl(blob.url);
               } catch (err) {
-                alert(`Upload failed: ${err instanceof Error ? err.message : "Unknown error"}`);
+                notify(`Upload failed: ${err instanceof Error ? err.message : "Unknown error"}`, "error");
               }
               setVideoUploading(false);
               e.target.value = "";
@@ -251,7 +253,15 @@ export default function ItemForm({
       <div className="flex items-center justify-between pt-4">
         <button
           type="button"
-          onClick={() => { if (confirm("Delete this item?")) deleteAction(); }}
+          onClick={async () => {
+            const ok = await confirm({
+              title: "Delete item",
+              message: `"${item.name}" will be permanently deleted along with its specs and images.`,
+              confirmLabel: "Delete",
+              variant: "danger",
+            });
+            if (ok) deleteAction();
+          }}
           className="text-xs tracking-wider uppercase px-4 py-2 rounded-lg"
           style={{ color: "#f87171", background: "rgba(248,113,113,.08)", border: "1px solid rgba(248,113,113,.15)" }}
         >
