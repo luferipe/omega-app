@@ -1,14 +1,7 @@
 import React from "react";
-import { Document, Page, Text, View, StyleSheet, Font, Image } from "@react-pdf/renderer";
+import { Document, Page, Text, View, StyleSheet, Image } from "@react-pdf/renderer";
 
-Font.register({
-  family: "Inter",
-  fonts: [
-    { src: "https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfAZ9hjQ.ttf", fontWeight: 300 },
-    { src: "https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfAZ9hiA.ttf", fontWeight: 400 },
-    { src: "https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuI6fAZ9hjQ.ttf", fontWeight: 600 },
-  ],
-});
+// Using built-in Helvetica — no external font fetching, no fontkit parsing issues.
 
 const gold = "#c4a265";
 const bg = "#0a0a0c";
@@ -16,7 +9,7 @@ const cardBg = "#111114";
 const border = "#1a1a1e";
 
 const s = StyleSheet.create({
-  page: { backgroundColor: bg, padding: 40, fontFamily: "Inter", color: "#999", fontSize: 9 },
+  page: { backgroundColor: bg, padding: 40, fontFamily: "Helvetica", color: "#999", fontSize: 9 },
   cover: { flex: 1, justifyContent: "center", alignItems: "center", paddingVertical: 200 },
   coverLabel: { fontSize: 7, letterSpacing: 6, color: gold, textTransform: "uppercase", marginBottom: 20 },
   coverTitle: { fontSize: 42, fontWeight: 300, color: "#eee", letterSpacing: -1 },
