@@ -11,22 +11,48 @@ export default async function ItemEditPage({
 }) {
   const { projectId, sectionId, itemId } = await params;
 
-  const item = await prisma.item.findUnique({
-    where: { id: itemId },
-    include: {
-      specs: { orderBy: { sortOrder: "asc" } },
-      images: { orderBy: { sortOrder: "asc" } },
-      section: { select: { name: true, project: { select: { name: true } } } },
-    },
-  });
+  const [item, categoriesRaw] = await Promise.all([
+    prisma.item.findUnique({
+      where: { id: itemId },
+      include: {
+        specs: { orderBy: { sortOrder: "asc" } },
+        images: { orderBy: { sortOrder: "asc" } },
+        section: { select: { name: true, project: { select: { name: true } } } },
+      },
+    }),
+    prisma.category.findMany({
+      where: { parentId: null },
+      include: { children: { orderBy: { sortOrder: "asc" } } },
+      orderBy: { sortOrder: "asc" },
+    }),
+  ]);
 
   if (!item) notFound();
 
+  const categories = categoriesRaw.map((c) => ({
+    id: c.id,
+    name: c.name,
+    children: c.children.map((ch) => ({ id: ch.id, name: ch.name })),
+  }));
+
   async function saveItem(formData: FormData) {
     "use server";
+    const categoryId = (formData.get("categoryId") as string) || null;
+    let categoryName: string | null = null;
+    if (categoryId) {
+      const cat = await prisma.category.findUnique({
+        where: { id: categoryId },
+        include: { parent: true },
+      });
+      if (cat) {
+        categoryName = cat.parent ? `${cat.parent.name} / ${cat.name}` : cat.name;
+      }
+    }
+
     const data = {
       name: formData.get("name") as string,
-      category: formData.get("category") as string || null,
+      categoryId,
+      category: categoryName,
       roomLocation: formData.get("roomLocation") as string || null,
       finishType: formData.get("finishType") as string || null,
       description: formData.get("description") as string || null,
@@ -93,6 +119,7 @@ export default async function ItemEditPage({
           item={{
             name: item.name,
             category: item.category,
+            categoryId: item.categoryId,
             roomLocation: item.roomLocation,
             finishType: item.finishType,
             description: item.description,
@@ -103,6 +130,7 @@ export default async function ItemEditPage({
             videoUrl: item.videoUrl,
             specs: item.specs.map((s) => ({ label: s.label, value: s.value })),
           }}
+          categories={categories}
           saveAction={saveItem}
           deleteAction={deleteItem}
         />

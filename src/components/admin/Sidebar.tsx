@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 
 const nav = [
   { label: "Projects", href: "/admin", icon: "◆" },
+  { label: "Categories", href: "/admin/categories", icon: "▤" },
 ];
 
 export default function Sidebar() {

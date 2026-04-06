@@ -10,12 +10,25 @@ export default async function NewItemPage({
 }) {
   const { projectId, sectionId } = await params;
 
-  const section = await prisma.section.findUnique({
-    where: { id: sectionId },
-    select: { name: true, project: { select: { name: true } }, items: { select: { sortOrder: true }, orderBy: { sortOrder: "desc" }, take: 1 } },
-  });
+  const [section, categoriesRaw] = await Promise.all([
+    prisma.section.findUnique({
+      where: { id: sectionId },
+      select: { name: true, project: { select: { name: true } }, items: { select: { sortOrder: true }, orderBy: { sortOrder: "desc" }, take: 1 } },
+    }),
+    prisma.category.findMany({
+      where: { parentId: null },
+      include: { children: { orderBy: { sortOrder: "asc" } } },
+      orderBy: { sortOrder: "asc" },
+    }),
+  ]);
 
   if (!section) redirect(`/admin/projects/${projectId}`);
+
+  const categories = categoriesRaw.map((c) => ({
+    id: c.id,
+    name: c.name,
+    children: c.children.map((ch) => ({ id: ch.id, name: ch.name })),
+  }));
 
   const nextOrder = (section.items[0]?.sortOrder ?? -1) + 1;
 
@@ -24,11 +37,24 @@ export default async function NewItemPage({
     const specsJson = formData.get("specs") as string;
     const specs: { label: string; value: string }[] = specsJson ? JSON.parse(specsJson) : [];
 
+    const categoryId = (formData.get("categoryId") as string) || null;
+    let categoryName: string | null = null;
+    if (categoryId) {
+      const cat = await prisma.category.findUnique({
+        where: { id: categoryId },
+        include: { parent: true },
+      });
+      if (cat) {
+        categoryName = cat.parent ? `${cat.parent.name} / ${cat.name}` : cat.name;
+      }
+    }
+
     const item = await prisma.item.create({
       data: {
         sectionId,
         name: formData.get("name") as string,
-        category: (formData.get("category") as string) || null,
+        categoryId,
+        category: categoryName,
         roomLocation: (formData.get("roomLocation") as string) || null,
         finishType: (formData.get("finishType") as string) || null,
         description: (formData.get("description") as string) || null,
@@ -68,10 +94,11 @@ export default async function NewItemPage({
         </h2>
         <ItemForm
           item={{
-            name: "", category: null, roomLocation: null, finishType: null,
+            name: "", category: null, categoryId: null, roomLocation: null, finishType: null,
             description: null, vendorName: null, vendorContact: null,
             vendorPhone: null, vendorRef: null, videoUrl: null, specs: [{ label: "", value: "" }],
           }}
+          categories={categories}
           saveAction={createItem}
           deleteAction={async () => { "use server"; redirect(`/admin/projects/${projectId}/sections/${sectionId}`); }}
         />

@@ -11,6 +11,7 @@ interface Spec {
 interface ItemData {
   name: string;
   category: string | null;
+  categoryId: string | null;
   roomLocation: string | null;
   finishType: string | null;
   description: string | null;
@@ -22,6 +23,12 @@ interface ItemData {
   specs: Spec[];
 }
 
+export interface CategoryOption {
+  id: string;
+  name: string;
+  children: { id: string; name: string }[];
+}
+
 const inputStyle = {
   background: "rgba(255,255,255,.06)",
   border: "1px solid rgba(255,255,255,.06)",
@@ -31,45 +38,6 @@ const inputStyle = {
 const labelStyle = { color: "#aaa" };
 
 const COMMON_LABELS = ["Finish", "Material", "Size", "Style", "Brand", "Model", "Type", "Color", "Bulbs", "Height", "Width", "Mount", "Features", "Qty", "Area", "SKU", "Reference"];
-
-const CATEGORIES = [
-  "Appliance",
-  "Built-in Grill Station",
-  "Cabinet",
-  "Carpet",
-  "Countertop",
-  "Court Finishing",
-  "Deck",
-  "Electrical Fixtures",
-  "Exterior Door",
-  "Finish Carpentry",
-  "Finish Carpentry - Baseboards/Casing",
-  "Finish Carpentry - Walls",
-  "Fireplace",
-  "Garage Doors",
-  "Golf Simulator",
-  "Hardware",
-  "Hardwood Floor",
-  "Heating/Air Conditioning",
-  "Interior Doors",
-  "Interior Railing",
-  "Landscaping",
-  "Landscaping - Fence",
-  "Landscaping - Retaining Walls",
-  "Masonry Materials",
-  "Mirrors/Shower Enclosure",
-  "Painting",
-  "Pickleball Court",
-  "Plumbing Fixtures",
-  "Roof Material/Labor",
-  "Siding/Shake",
-  "Soffit/Facia/Gutters",
-  "SPA Sauna",
-  "Stucco",
-  "Swimming Pool",
-  "Tile Material",
-  "Windows/Patio Doors",
-];
 
 function Input({ label, name, value, onChange }: { label: string; name: string; value: string; onChange: (v: string) => void }) {
   return (
@@ -88,10 +56,12 @@ function Input({ label, name, value, onChange }: { label: string; name: string; 
 
 export default function ItemForm({
   item,
+  categories,
   saveAction,
   deleteAction,
 }: {
   item: ItemData;
+  categories: CategoryOption[];
   saveAction: (formData: FormData) => void;
   deleteAction: () => void;
 }) {
@@ -130,14 +100,23 @@ export default function ItemForm({
           <div>
             <label className="block text-[10px] uppercase tracking-widest mb-1.5" style={labelStyle}>Category</label>
             <select
-              name="category"
-              defaultValue={item.category || ""}
+              name="categoryId"
+              defaultValue={item.categoryId || ""}
               className="w-full px-3 py-2 rounded-lg text-sm outline-none focus:ring-1 focus:ring-[#c4a265]"
               style={inputStyle}
             >
               <option value="">— Select category —</option>
-              {CATEGORIES.map((c) => (
-                <option key={c} value={c}>{c}</option>
+              {categories.map((c) => (
+                c.children.length > 0 ? (
+                  <optgroup key={c.id} label={c.name}>
+                    <option value={c.id}>{c.name} (general)</option>
+                    {c.children.map((sub) => (
+                      <option key={sub.id} value={sub.id}>{sub.name}</option>
+                    ))}
+                  </optgroup>
+                ) : (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                )
               ))}
             </select>
           </div>

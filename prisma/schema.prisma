@@ -48,12 +48,29 @@ model Section {
   @@index([projectId, sortOrder])
 }
 
+model Category {
+  id        String     @id @default(cuid())
+  name      String
+  slug      String     @unique
+  parentId  String?
+  parent    Category?  @relation("CategoryChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  children  Category[] @relation("CategoryChildren")
+  sortOrder Int        @default(0)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  items     Item[]
+
+  @@index([parentId, sortOrder])
+}
+
 model Item {
   id            String      @id @default(cuid())
   sectionId     String
   section       Section     @relation(fields: [sectionId], references: [id], onDelete: Cascade)
   name          String
   category      String?
+  categoryId    String?
+  categoryRef   Category?   @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   roomLocation  String?
   description   String?
   finishType    String?
