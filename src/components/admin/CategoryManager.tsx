@@ -50,11 +50,11 @@ export default function CategoryManager({
 
   return (
     <div className="space-y-6">
-      {/* Add new top-level category */}
+      {/* Add new category or subcategory */}
       <form action={createAction} className="p-5 rounded-xl border flex gap-3 items-end" style={cardStyle}>
         <div className="flex-1">
           <label className="block text-[10px] uppercase tracking-widest mb-1.5" style={{ color: "#aaa" }}>
-            New Category
+            Name
           </label>
           <input
             name="name"
@@ -63,6 +63,22 @@ export default function CategoryManager({
             className="w-full px-3 py-2 rounded-lg text-sm outline-none focus:ring-1 focus:ring-[#c4a265]"
             style={inputStyle}
           />
+        </div>
+        <div className="flex-1">
+          <label className="block text-[10px] uppercase tracking-widest mb-1.5" style={{ color: "#aaa" }}>
+            Parent (optional)
+          </label>
+          <select
+            name="parentId"
+            defaultValue=""
+            className="w-full px-3 py-2 rounded-lg text-sm outline-none focus:ring-1 focus:ring-[#c4a265]"
+            style={inputStyle}
+          >
+            <option value="">— None (top-level) —</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
         </div>
         <button
           type="submit"
