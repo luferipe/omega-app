@@ -18,6 +18,25 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
 
   if (!project) notFound();
 
+  // Build category breakdown for items in this project
+  const itemsWithCat = await prisma.item.findMany({
+    where: { section: { projectId } },
+    select: { categoryRef: { include: { parent: true } } },
+  });
+  const catCounts = new Map<string, { name: string; sort: number; count: number }>();
+  let uncategorizedCount = 0;
+  for (const it of itemsWithCat) {
+    if (!it.categoryRef) {
+      uncategorizedCount++;
+      continue;
+    }
+    const parent = it.categoryRef.parent ?? it.categoryRef;
+    const existing = catCounts.get(parent.id);
+    if (existing) existing.count++;
+    else catCounts.set(parent.id, { name: parent.name, sort: parent.sortOrder, count: 1 });
+  }
+  const categoryBreakdown = [...catCounts.values()].sort((a, b) => a.sort - b.sort);
+
   return (
     <AdminShell>
       <div className="mb-6">
@@ -64,6 +83,42 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           )}
         </div>
       </div>
+
+      {/* Category breakdown */}
+      {categoryBreakdown.length > 0 && (
+        <div className="mb-10 p-5 rounded-xl border" style={{ background: "rgba(255,255,255,.04)", borderColor: "rgba(255,255,255,.08)" }}>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xs uppercase tracking-widest" style={{ color: "#c4a265" }}>
+              By Category
+            </h3>
+            <Link href="/admin/categories" className="text-[10px] uppercase tracking-wider" style={{ color: "#888" }}>
+              Manage →
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            {categoryBreakdown.map((c) => (
+              <div
+                key={c.name}
+                className="flex items-center justify-between px-3 py-2 rounded-lg"
+                style={{ background: "rgba(196,162,101,.06)", border: "1px solid rgba(196,162,101,.12)" }}
+              >
+                <span className="text-xs" style={{ color: "#ddd" }}>{c.name}</span>
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded" style={{ background: "rgba(196,162,101,.15)", color: "#c4a265" }}>
+                  {c.count}
+                </span>
+              </div>
+            ))}
+            {uncategorizedCount > 0 && (
+              <div className="flex items-center justify-between px-3 py-2 rounded-lg" style={{ background: "rgba(248,113,113,.06)", border: "1px solid rgba(248,113,113,.12)" }}>
+                <span className="text-xs" style={{ color: "#bbb" }}>Uncategorized</span>
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded" style={{ background: "rgba(248,113,113,.15)", color: "#f87171" }}>
+                  {uncategorizedCount}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="flex items-center justify-between mb-5">
         <h3 className="text-sm uppercase tracking-wider" style={{ color: "#bbb" }}>
