@@ -32,6 +32,45 @@ const labelStyle = { color: "#aaa" };
 
 const COMMON_LABELS = ["Finish", "Material", "Size", "Style", "Brand", "Model", "Type", "Color", "Bulbs", "Height", "Width", "Mount", "Features", "Qty", "Area", "SKU", "Reference"];
 
+const CATEGORIES = [
+  "Appliance",
+  "Built-in Grill Station",
+  "Cabinet",
+  "Carpet",
+  "Countertop",
+  "Court Finishing",
+  "Deck",
+  "Electrical Fixtures",
+  "Exterior Door",
+  "Finish Carpentry",
+  "Finish Carpentry - Baseboards/Casing",
+  "Finish Carpentry - Walls",
+  "Fireplace",
+  "Garage Doors",
+  "Golf Simulator",
+  "Hardware",
+  "Hardwood Floor",
+  "Heating/Air Conditioning",
+  "Interior Doors",
+  "Interior Railing",
+  "Landscaping",
+  "Landscaping - Fence",
+  "Landscaping - Retaining Walls",
+  "Masonry Materials",
+  "Mirrors/Shower Enclosure",
+  "Painting",
+  "Pickleball Court",
+  "Plumbing Fixtures",
+  "Roof Material/Labor",
+  "Siding/Shake",
+  "Soffit/Facia/Gutters",
+  "SPA Sauna",
+  "Stucco",
+  "Swimming Pool",
+  "Tile Material",
+  "Windows/Patio Doors",
+];
+
 function Input({ label, name, value, onChange }: { label: string; name: string; value: string; onChange: (v: string) => void }) {
   return (
     <div>
@@ -88,7 +127,20 @@ export default function ItemForm({
         <h3 className="text-xs uppercase tracking-widest" style={{ color: "#c4a265" }}>Basic Information</h3>
         <Input label="Name" name="name" value={item.name} onChange={() => {}} />
         <div className="grid grid-cols-2 gap-4">
-          <Input label="Category" name="category" value={item.category || ""} onChange={() => {}} />
+          <div>
+            <label className="block text-[10px] uppercase tracking-widest mb-1.5" style={labelStyle}>Category</label>
+            <select
+              name="category"
+              defaultValue={item.category || ""}
+              className="w-full px-3 py-2 rounded-lg text-sm outline-none focus:ring-1 focus:ring-[#c4a265]"
+              style={inputStyle}
+            >
+              <option value="">— Select category —</option>
+              {CATEGORIES.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
           <Input label="Room / Location" name="roomLocation" value={item.roomLocation || ""} onChange={() => {}} />
         </div>
         <Input label="Finish Type" name="finishType" value={item.finishType || ""} onChange={() => {}} />
