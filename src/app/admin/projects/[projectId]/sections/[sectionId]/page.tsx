@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import AdminShell from "@/components/admin/AdminShell";
+import DeleteSectionButton from "@/components/admin/DeleteSectionButton";
 
 export default async function SectionDetailPage({
   params,
@@ -26,6 +27,12 @@ export default async function SectionDetailPage({
 
   if (!section) notFound();
 
+  async function deleteSection() {
+    "use server";
+    await prisma.section.delete({ where: { id: sectionId } });
+    redirect(`/admin/projects/${projectId}`);
+  }
+
   return (
     <AdminShell>
       <div className="mb-6 flex gap-2 text-xs uppercase tracking-wider" style={{ color: "#999" }}>
@@ -41,13 +48,20 @@ export default async function SectionDetailPage({
           </h2>
           {section.subtitle && <p className="text-xs mt-1" style={{ color: "#aaa" }}>{section.subtitle}</p>}
         </div>
-        <Link
-          href={`/admin/projects/${projectId}/sections/${sectionId}/items/new`}
-          className="px-3 py-1.5 rounded-lg text-xs tracking-wider uppercase"
-          style={{ background: "#c4a265", color: "#060606" }}
-        >
-          + Add Item
-        </Link>
+        <div className="flex items-center gap-2">
+          <DeleteSectionButton
+            sectionName={section.name}
+            itemCount={section.items.length}
+            deleteAction={deleteSection}
+          />
+          <Link
+            href={`/admin/projects/${projectId}/sections/${sectionId}/items/new`}
+            className="px-3 py-1.5 rounded-lg text-xs tracking-wider uppercase"
+            style={{ background: "#c4a265", color: "#060606" }}
+          >
+            + Add Item
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
