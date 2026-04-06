@@ -33,13 +33,25 @@ export async function GET(
 
   if (!project) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const buffer = await renderToBuffer(<CatalogPDF project={project} />);
-  const uint8 = new Uint8Array(buffer);
+  try {
+    const buffer = await renderToBuffer(<CatalogPDF project={project} />);
+    const uint8 = new Uint8Array(buffer);
 
-  return new NextResponse(uint8, {
-    headers: {
-      "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename="${project.slug}-catalog.pdf"`,
-    },
-  });
+    return new NextResponse(uint8, {
+      headers: {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `attachment; filename="${project.slug}-catalog.pdf"`,
+      },
+    });
+  } catch (err) {
+    console.error("[pdf] render failed:", err);
+    return NextResponse.json(
+      {
+        error: "PDF render failed",
+        message: err instanceof Error ? err.message : String(err),
+        stack: err instanceof Error ? err.stack?.split("\n").slice(0, 8) : undefined,
+      },
+      { status: 500 }
+    );
+  }
 }
