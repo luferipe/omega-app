@@ -62,6 +62,7 @@ export default async function ItemEditPage({
       vendorPhone: formData.get("vendorPhone") as string || null,
       vendorRef: formData.get("vendorRef") as string || null,
       videoUrl: formData.get("videoUrl") as string || null,
+      pdfUrl: formData.get("pdfUrl") as string || null,
     };
 
     // Parse specs JSON
@@ -136,6 +137,7 @@ export default async function ItemEditPage({
             vendorPhone: item.vendorPhone,
             vendorRef: item.vendorRef,
             videoUrl: item.videoUrl,
+            pdfUrl: item.pdfUrl,
             specs: item.specs.map((s) => ({ label: s.label, value: s.value })),
           }}
           categories={categories}

@@ -21,6 +21,7 @@ interface ItemData {
   vendorPhone: string | null;
   vendorRef: string | null;
   videoUrl: string | null;
+  pdfUrl: string | null;
   specs: Spec[];
 }
 
@@ -69,6 +70,9 @@ export default function ItemForm({
   const [videoUrl, setVideoUrl] = useState(item.videoUrl || "");
   const [videoUploading, setVideoUploading] = useState(false);
   const videoRef = useRef<HTMLInputElement>(null);
+  const [pdfUrl, setPdfUrl] = useState(item.pdfUrl || "");
+  const [pdfUploading, setPdfUploading] = useState(false);
+  const pdfRef = useRef<HTMLInputElement>(null);
   const { confirm, notify } = useUI();
 
   function addSpec() {
@@ -235,6 +239,75 @@ export default function ItemForm({
         <datalist id="spec-labels">
           {COMMON_LABELS.map((l) => <option key={l} value={l} />)}
         </datalist>
+      </div>
+
+      {/* PDF Document */}
+      <div className="p-5 rounded-xl border space-y-4" style={{ background: "rgba(255,255,255,.06)", borderColor: "rgba(255,255,255,.1)" }}>
+        <h3 className="text-xs uppercase tracking-widest" style={{ color: "#c4a265" }}>PDF Document</h3>
+        <div>
+          <label className="block text-[10px] uppercase tracking-widest mb-1.5" style={labelStyle}>Datasheet / Spec PDF</label>
+          <div className="flex gap-2">
+            <input
+              name="pdfUrl"
+              value={pdfUrl}
+              onChange={(e) => setPdfUrl(e.target.value)}
+              placeholder="Paste a PDF URL or upload a file"
+              className="flex-1 px-3 py-2 rounded-lg text-sm outline-none focus:ring-1 focus:ring-[#c4a265]"
+              style={inputStyle}
+            />
+            <button
+              type="button"
+              disabled={pdfUploading}
+              onClick={() => pdfRef.current?.click()}
+              className="px-3 py-2 rounded-lg text-[10px] uppercase tracking-wider whitespace-nowrap"
+              style={{ background: "rgba(196,162,101,.15)", color: "#c4a265", border: "1px solid rgba(196,162,101,.2)" }}
+            >
+              {pdfUploading ? "Uploading..." : "Upload PDF"}
+            </button>
+          </div>
+          <input
+            ref={pdfRef}
+            type="file"
+            accept="application/pdf"
+            className="hidden"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              setPdfUploading(true);
+              try {
+                const blob = await upload(file.name, file, {
+                  access: "public",
+                  handleUploadUrl: "/api/upload-pdf",
+                });
+                setPdfUrl(blob.url);
+              } catch (err) {
+                notify(`Upload failed: ${err instanceof Error ? err.message : "Unknown error"}`, "error");
+              }
+              setPdfUploading(false);
+              e.target.value = "";
+            }}
+          />
+          {pdfUrl && (
+            <div className="mt-3 flex items-center gap-3 p-3 rounded-lg" style={{ background: "rgba(0,0,0,.25)", border: "1px solid rgba(255,255,255,.06)" }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#c4a265" strokeWidth="1.5">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <path d="M14 2v6h6M9 13h6M9 17h6" />
+              </svg>
+              <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className="text-xs underline flex-1 truncate" style={{ color: "#c4a265" }}>
+                {pdfUrl.split("/").pop()?.split("?")[0] || pdfUrl}
+              </a>
+              <button
+                type="button"
+                onClick={() => setPdfUrl("")}
+                className="text-[10px] uppercase tracking-wider px-2 py-1 rounded"
+                style={{ color: "#f87171", background: "rgba(248,113,113,.08)" }}
+              >
+                Remove
+              </button>
+            </div>
+          )}
+          <p className="text-[9px] mt-1" style={{ color: "#666" }}>Upload a PDF (max 100MB) or paste an existing URL</p>
+        </div>
       </div>
 
       {/* Vendor */}

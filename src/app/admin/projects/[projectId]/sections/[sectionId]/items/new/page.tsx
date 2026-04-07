@@ -63,6 +63,7 @@ export default async function NewItemPage({
         vendorPhone: (formData.get("vendorPhone") as string) || null,
         vendorRef: (formData.get("vendorRef") as string) || null,
         videoUrl: (formData.get("videoUrl") as string) || null,
+        pdfUrl: (formData.get("pdfUrl") as string) || null,
         sortOrder: nextOrder,
       },
     });
@@ -96,7 +97,7 @@ export default async function NewItemPage({
           item={{
             name: "", category: null, categoryId: null, roomLocation: null, finishType: null,
             description: null, vendorName: null, vendorContact: null,
-            vendorPhone: null, vendorRef: null, videoUrl: null, specs: [{ label: "", value: "" }],
+            vendorPhone: null, vendorRef: null, videoUrl: null, pdfUrl: null, specs: [{ label: "", value: "" }],
           }}
           categories={categories}
           saveAction={createItem}

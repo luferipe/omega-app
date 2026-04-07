@@ -26,6 +26,7 @@ interface Item {
   vendorPhone: string | null;
   vendorRef: string | null;
   videoUrl: string | null;
+  pdfUrl: string | null;
   specs: Spec[];
   images: Image[];
 }
@@ -100,6 +101,18 @@ export default function ProductCard({ item }: { item: Item }) {
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="#c4a265">
                 <path d="M8 5v14l11-7z" />
+              </svg>
+            </span>
+          )}
+          {item.pdfUrl && (
+            <span
+              className="absolute bottom-3 w-8 h-8 flex items-center justify-center rounded-full"
+              style={{ right: item.videoUrl ? 48 : 12, background: "rgba(0,0,0,.6)", backdropFilter: "blur(8px)" }}
+              title="PDF available"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#c4a265" strokeWidth="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <path d="M14 2v6h6" />
               </svg>
             </span>
           )}

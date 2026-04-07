@@ -25,6 +25,7 @@ interface Item {
   vendorPhone: string | null;
   vendorRef: string | null;
   videoUrl: string | null;
+  pdfUrl: string | null;
   specs: Spec[];
   images: Image[];
 }
@@ -54,6 +55,7 @@ export default function ProductModal({
 }) {
   const [activeImage, setActiveImage] = useState(0);
   const [showVideo, setShowVideo] = useState(false);
+  const [showPdf, setShowPdf] = useState(false);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -272,6 +274,45 @@ export default function ProductModal({
             </div>
           )}
 
+          {/* PDF */}
+          {item.pdfUrl && (
+            <div className="mt-6 pt-6" style={{ borderTop: "1px solid rgba(255,255,255,.06)" }}>
+              <h3 className="text-[10px] uppercase tracking-[.2em] mb-3" style={{ color: "#c4a265" }}>
+                Documentation
+              </h3>
+              <div className="flex items-center gap-3 p-3 rounded-lg" style={{ background: "rgba(0,0,0,.25)", border: "1px solid rgba(255,255,255,.06)" }}>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#c4a265" strokeWidth="1.5">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <path d="M14 2v6h6M9 13h6M9 17h6" />
+                </svg>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm truncate" style={{ color: "#ccc" }}>
+                    {item.pdfUrl.split("/").pop()?.split("?")[0] || "Datasheet.pdf"}
+                  </p>
+                  <p className="text-[10px] uppercase tracking-wider" style={{ color: "#666" }}>PDF Document</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowPdf(true)}
+                  className="text-[10px] uppercase tracking-wider px-3 py-2 rounded-md"
+                  style={{ background: "rgba(196,162,101,.15)", color: "#c4a265", border: "1px solid rgba(196,162,101,.2)" }}
+                >
+                  View
+                </button>
+                <a
+                  href={item.pdfUrl}
+                  download
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[10px] uppercase tracking-wider px-3 py-2 rounded-md"
+                  style={{ background: "rgba(255,255,255,.05)", color: "#bbb", border: "1px solid rgba(255,255,255,.08)" }}
+                >
+                  Download
+                </a>
+              </div>
+            </div>
+          )}
+
           {/* Vendor info */}
           {(item.vendorName || item.vendorRef) && (
             <div className="mt-6 pt-6" style={{ borderTop: "1px solid rgba(255,255,255,.06)" }}>
@@ -305,6 +346,52 @@ export default function ProductModal({
           )}
         </div>
       </div>
+
+      {/* PDF Viewer overlay */}
+      {showPdf && item.pdfUrl && (
+        <div
+          className="fixed inset-0 z-[60] flex flex-col p-4 md:p-6"
+          style={{ background: "rgba(0,0,0,.95)", backdropFilter: "blur(16px)" }}
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowPdf(false);
+          }}
+        >
+          <div className="flex items-center justify-between mb-3" onClick={(e) => e.stopPropagation()}>
+            <p className="text-xs uppercase tracking-[.2em]" style={{ color: "#c4a265" }}>
+              {item.name}
+            </p>
+            <div className="flex gap-2">
+              <a
+                href={item.pdfUrl}
+                download
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[10px] uppercase tracking-wider px-3 py-2 rounded-md"
+                style={{ background: "rgba(196,162,101,.15)", color: "#c4a265", border: "1px solid rgba(196,162,101,.2)" }}
+              >
+                Download
+              </a>
+              <button
+                onClick={() => setShowPdf(false)}
+                className="w-9 h-9 flex items-center justify-center rounded-full text-white/60 hover:text-white"
+                style={{ background: "rgba(255,255,255,.06)" }}
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M4 4l8 8M12 4l-8 8" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <iframe
+            src={item.pdfUrl}
+            title={`${item.name} PDF`}
+            className="flex-1 w-full rounded-xl border"
+            style={{ borderColor: "rgba(255,255,255,.08)", background: "#1a1a1a" }}
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   );
 }
