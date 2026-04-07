@@ -40,14 +40,13 @@ const labelStyle = { color: "#aaa" };
 
 const COMMON_LABELS = ["Finish", "Material", "Size", "Style", "Brand", "Model", "Type", "Color", "Bulbs", "Height", "Width", "Mount", "Features", "Qty", "Area", "SKU", "Reference"];
 
-function Input({ label, name, value, onChange }: { label: string; name: string; value: string; onChange: (v: string) => void }) {
+function Input({ label, name, defaultValue }: { label: string; name: string; defaultValue: string }) {
   return (
     <div>
       <label className="block text-[10px] uppercase tracking-widest mb-1.5" style={labelStyle}>{label}</label>
       <input
         name={name}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
+        defaultValue={defaultValue}
         className="w-full px-3 py-2 rounded-lg text-sm outline-none focus:ring-1 focus:ring-[#c4a265]"
         style={inputStyle}
       />
@@ -97,7 +96,7 @@ export default function ItemForm({
       {/* Basic Info */}
       <div className="p-5 rounded-xl border space-y-4" style={{ background: "rgba(255,255,255,.06)", borderColor: "rgba(255,255,255,.1)" }}>
         <h3 className="text-xs uppercase tracking-widest" style={{ color: "#c4a265" }}>Basic Information</h3>
-        <Input label="Name" name="name" value={item.name} onChange={() => {}} />
+        <Input label="Name" name="name" defaultValue={item.name} />
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-[10px] uppercase tracking-widest mb-1.5" style={labelStyle}>Category</label>
@@ -122,9 +121,9 @@ export default function ItemForm({
               ))}
             </select>
           </div>
-          <Input label="Room / Location" name="roomLocation" value={item.roomLocation || ""} onChange={() => {}} />
+          <Input label="Room / Location" name="roomLocation" defaultValue={item.roomLocation || ""} />
         </div>
-        <Input label="Finish Type" name="finishType" value={item.finishType || ""} onChange={() => {}} />
+        <Input label="Finish Type" name="finishType" defaultValue={item.finishType || ""} />
         <div>
           <label className="block text-[10px] uppercase tracking-widest mb-1.5" style={labelStyle}>Description</label>
           <textarea
@@ -242,10 +241,10 @@ export default function ItemForm({
       <div className="p-5 rounded-xl border space-y-4" style={{ background: "rgba(255,255,255,.06)", borderColor: "rgba(255,255,255,.1)" }}>
         <h3 className="text-xs uppercase tracking-widest" style={{ color: "#c4a265" }}>Vendor Information</h3>
         <div className="grid grid-cols-2 gap-4">
-          <Input label="Vendor Name" name="vendorName" value={item.vendorName || ""} onChange={() => {}} />
-          <Input label="Contact" name="vendorContact" value={item.vendorContact || ""} onChange={() => {}} />
-          <Input label="Phone" name="vendorPhone" value={item.vendorPhone || ""} onChange={() => {}} />
-          <Input label="Reference #" name="vendorRef" value={item.vendorRef || ""} onChange={() => {}} />
+          <Input label="Vendor Name" name="vendorName" defaultValue={item.vendorName || ""} />
+          <Input label="Contact" name="vendorContact" defaultValue={item.vendorContact || ""} />
+          <Input label="Phone" name="vendorPhone" defaultValue={item.vendorPhone || ""} />
+          <Input label="Reference #" name="vendorRef" defaultValue={item.vendorRef || ""} />
         </div>
       </div>
 
