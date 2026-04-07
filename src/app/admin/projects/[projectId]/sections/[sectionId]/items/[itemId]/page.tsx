@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import AdminShell from "@/components/admin/AdminShell";
 import ItemForm from "@/components/admin/ItemForm";
@@ -79,12 +80,19 @@ export default async function ItemEditPage({
       }
     }
 
+    const project = await prisma.project.findUnique({ where: { id: projectId }, select: { slug: true } });
+    if (project?.slug) revalidatePath(`/catalog/${project.slug}`);
+    revalidatePath(`/admin/projects/${projectId}/sections/${sectionId}`);
+
     redirect(`/admin/projects/${projectId}/sections/${sectionId}`);
   }
 
   async function deleteItem() {
     "use server";
     await prisma.item.delete({ where: { id: itemId } });
+    const project = await prisma.project.findUnique({ where: { id: projectId }, select: { slug: true } });
+    if (project?.slug) revalidatePath(`/catalog/${project.slug}`);
+    revalidatePath(`/admin/projects/${projectId}/sections/${sectionId}`);
     redirect(`/admin/projects/${projectId}/sections/${sectionId}`);
   }
 
