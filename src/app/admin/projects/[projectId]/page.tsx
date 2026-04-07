@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import AdminShell from "@/components/admin/AdminShell";
 import PdfViewerModal from "@/components/admin/PdfViewerModal";
+import ProjectItemsSearch, { type ProjectSearchItem } from "@/components/admin/ProjectItemsSearch";
 
 export default async function ProjectDetailPage({ params }: { params: Promise<{ projectId: string }> }) {
   const { projectId } = await params;
@@ -19,14 +20,21 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
 
   if (!project) notFound();
 
-  // Build category breakdown for items in this project
-  const itemsWithCat = await prisma.item.findMany({
+  // Load all items in this project (for category breakdown + search)
+  const allItems = await prisma.item.findMany({
     where: { section: { projectId } },
-    select: { categoryRef: { include: { parent: true } } },
+    orderBy: [{ section: { sortOrder: "asc" } }, { sortOrder: "asc" }],
+    include: {
+      categoryRef: { include: { parent: true } },
+      section: { select: { id: true, name: true } },
+      specs: { select: { label: true, value: true }, orderBy: { sortOrder: "asc" } },
+      images: { where: { isPrimary: true }, select: { url: true }, take: 1 },
+    },
   });
+
   const catCounts = new Map<string, { name: string; sort: number; count: number }>();
   let uncategorizedCount = 0;
-  for (const it of itemsWithCat) {
+  for (const it of allItems) {
     if (!it.categoryRef) {
       uncategorizedCount++;
       continue;
@@ -37,6 +45,19 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     else catCounts.set(parent.id, { name: parent.name, sort: parent.sortOrder, count: 1 });
   }
   const categoryBreakdown = [...catCounts.values()].sort((a, b) => a.sort - b.sort);
+
+  const searchItems: ProjectSearchItem[] = allItems.map((it) => ({
+    id: it.id,
+    name: it.name,
+    category: it.category,
+    finishType: it.finishType,
+    roomLocation: it.roomLocation,
+    vendorName: it.vendorName,
+    sectionId: it.section.id,
+    sectionName: it.section.name,
+    thumbnail: it.images[0]?.url ?? null,
+    specs: it.specs.map((s) => ({ label: s.label, value: s.value })),
+  }));
 
   return (
     <AdminShell>
@@ -114,6 +135,8 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           </div>
         </div>
       )}
+
+      <ProjectItemsSearch items={searchItems} projectId={projectId} />
 
       <div className="flex items-center justify-between mb-5">
         <h3 className="text-sm uppercase tracking-wider" style={{ color: "#bbb" }}>
