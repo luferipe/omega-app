@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import AdminShell from "@/components/admin/AdminShell";
 import PdfViewerModal from "@/components/admin/PdfViewerModal";
 import ProjectItemsSearch, { type ProjectSearchItem } from "@/components/admin/ProjectItemsSearch";
+import ProjectCategoryBrowser, { type CategoryBreakdownEntry } from "@/components/admin/ProjectCategoryBrowser";
 
 export default async function ProjectDetailPage({ params }: { params: Promise<{ projectId: string }> }) {
   const { projectId } = await params;
@@ -32,7 +33,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     },
   });
 
-  const catCounts = new Map<string, { name: string; sort: number; count: number }>();
+  const catCounts = new Map<string, { id: string; name: string; sort: number; count: number }>();
   let uncategorizedCount = 0;
   for (const it of allItems) {
     if (!it.categoryRef) {
@@ -42,9 +43,14 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     const parent = it.categoryRef.parent ?? it.categoryRef;
     const existing = catCounts.get(parent.id);
     if (existing) existing.count++;
-    else catCounts.set(parent.id, { name: parent.name, sort: parent.sortOrder, count: 1 });
+    else catCounts.set(parent.id, { id: parent.id, name: parent.name, sort: parent.sortOrder, count: 1 });
   }
-  const categoryBreakdown = [...catCounts.values()].sort((a, b) => a.sort - b.sort);
+  const categoryBreakdown: CategoryBreakdownEntry[] = [...catCounts.values()]
+    .sort((a, b) => a.sort - b.sort)
+    .map((c) => ({ id: c.id, name: c.name, count: c.count }));
+  if (uncategorizedCount > 0) {
+    categoryBreakdown.push({ id: null, name: "Uncategorized", count: uncategorizedCount });
+  }
 
   const searchItems: ProjectSearchItem[] = allItems.map((it) => ({
     id: it.id,
@@ -58,6 +64,13 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     thumbnail: it.images[0]?.url ?? null,
     specs: it.specs.map((s) => ({ label: s.label, value: s.value })),
   }));
+
+  const browserItems = allItems.map((it, idx) => {
+    const parentId = it.categoryRef
+      ? (it.categoryRef.parent?.id ?? it.categoryRef.id)
+      : null;
+    return { ...searchItems[idx], parentCategoryId: parentId };
+  });
 
   return (
     <AdminShell>
@@ -100,40 +113,12 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         </div>
       </div>
 
-      {/* Category breakdown */}
       {categoryBreakdown.length > 0 && (
-        <div className="mb-10 p-5 rounded-xl border" style={{ background: "rgba(255,255,255,.04)", borderColor: "rgba(255,255,255,.08)" }}>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xs uppercase tracking-widest" style={{ color: "#c4a265" }}>
-              By Category
-            </h3>
-            <Link href="/admin/categories" className="text-[10px] uppercase tracking-wider" style={{ color: "#888" }}>
-              Manage →
-            </Link>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-            {categoryBreakdown.map((c) => (
-              <div
-                key={c.name}
-                className="flex items-center justify-between px-3 py-2 rounded-lg"
-                style={{ background: "rgba(196,162,101,.06)", border: "1px solid rgba(196,162,101,.12)" }}
-              >
-                <span className="text-xs" style={{ color: "#ddd" }}>{c.name}</span>
-                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded" style={{ background: "rgba(196,162,101,.15)", color: "#c4a265" }}>
-                  {c.count}
-                </span>
-              </div>
-            ))}
-            {uncategorizedCount > 0 && (
-              <div className="flex items-center justify-between px-3 py-2 rounded-lg" style={{ background: "rgba(248,113,113,.06)", border: "1px solid rgba(248,113,113,.12)" }}>
-                <span className="text-xs" style={{ color: "#bbb" }}>Uncategorized</span>
-                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded" style={{ background: "rgba(248,113,113,.15)", color: "#f87171" }}>
-                  {uncategorizedCount}
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
+        <ProjectCategoryBrowser
+          categories={categoryBreakdown}
+          items={browserItems}
+          projectId={projectId}
+        />
       )}
 
       <ProjectItemsSearch items={searchItems} projectId={projectId} />
