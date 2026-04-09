@@ -99,6 +99,13 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               View Catalog
             </Link>
           )}
+          <Link
+            href={`/admin/projects/${projectId}/items/new`}
+            className="px-4 py-2 rounded-lg text-xs tracking-wider uppercase"
+            style={{ background: "#c4a265", color: "#060606" }}
+          >
+            + Add Item
+          </Link>
           <PdfViewerModal projectId={projectId} projectSlug={project.slug} projectName={project.name} />
           {project.published && (
             <Link

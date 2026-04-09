@@ -58,11 +58,15 @@ function Input({ label, name, defaultValue }: { label: string; name: string; def
 export default function ItemForm({
   item,
   categories,
+  sections,
+  defaultSectionId,
   saveAction,
   deleteAction,
 }: {
   item: ItemData;
   categories: CategoryOption[];
+  sections?: { id: string; name: string }[];
+  defaultSectionId?: string;
   saveAction: (formData: FormData) => void;
   deleteAction: () => void;
 }) {
@@ -100,6 +104,23 @@ export default function ItemForm({
       {/* Basic Info */}
       <div className="p-5 rounded-xl border space-y-4" style={{ background: "rgba(255,255,255,.06)", borderColor: "rgba(255,255,255,.1)" }}>
         <h3 className="text-xs uppercase tracking-widest" style={{ color: "#c4a265" }}>Basic Information</h3>
+        {sections && sections.length > 0 && (
+          <div>
+            <label className="block text-[10px] uppercase tracking-widest mb-1.5" style={labelStyle}>Section</label>
+            <select
+              name="sectionId"
+              required
+              defaultValue={defaultSectionId || ""}
+              className="w-full px-3 py-2 rounded-lg text-sm outline-none focus:ring-1 focus:ring-[#c4a265]"
+              style={inputStyle}
+            >
+              <option value="">— Select section —</option>
+              {sections.map((s) => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
         <Input label="Name" name="name" defaultValue={item.name} />
         <div className="grid grid-cols-2 gap-4">
           <div>
