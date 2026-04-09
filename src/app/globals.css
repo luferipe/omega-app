@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+html {
+  color-scheme: dark;
+}
+
 :root {
   --gold: #c4a265;
   --gold-light: #d4b87a;
@@ -40,9 +44,15 @@ select {
   border: 1px solid var(--border);
   color-scheme: dark;
 }
-select option {
-  background-color: var(--bg-elevated);
-  color: var(--text-light);
+select option,
+select optgroup {
+  background-color: #1a1a1e;
+  color: #e0e0e0;
+}
+select option:checked,
+select option:hover {
+  background-color: #26262c;
+  color: #ffffff;
 }
 
 /* Scrollbar */
