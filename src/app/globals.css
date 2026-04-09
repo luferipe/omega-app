@@ -33,6 +33,18 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Selects — match dark theme */
+select {
+  background-color: var(--bg-elevated);
+  color: var(--text-light);
+  border: 1px solid var(--border);
+  color-scheme: dark;
+}
+select option {
+  background-color: var(--bg-elevated);
+  color: var(--text-light);
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
