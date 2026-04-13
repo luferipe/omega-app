@@ -31,20 +31,18 @@ interface Item {
 }
 
 function getEmbedUrl(url: string): string | null {
-  // YouTube
   const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
   if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=0&rel=0`;
-
-  // Vimeo
   const vimeoMatch = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
   if (vimeoMatch) return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
-
   return null;
 }
 
 function isDirectVideo(url: string): boolean {
   return /\.(mp4|webm|mov|ogg)(\?.*)?$/i.test(url);
 }
+
+type Tab = "photos" | "video" | "pdf";
 
 export default function ProductModal({
   item,
@@ -54,19 +52,24 @@ export default function ProductModal({
   onClose: () => void;
 }) {
   const [activeImage, setActiveImage] = useState(0);
-  const [showVideo, setShowVideo] = useState(false);
-  const [showPdf, setShowPdf] = useState(false);
+  const [activeTab, setActiveTab] = useState<Tab>("photos");
+  const [entered, setEntered] = useState(false);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
+      if (e.key === "ArrowLeft" && item.images.length > 1)
+        setActiveImage((i) => (i - 1 + item.images.length) % item.images.length);
+      if (e.key === "ArrowRight" && item.images.length > 1)
+        setActiveImage((i) => (i + 1) % item.images.length);
     },
-    [onClose]
+    [onClose, item.images.length],
   );
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
     window.addEventListener("keydown", handleKeyDown);
+    requestAnimationFrame(() => setEntered(true));
     return () => {
       document.body.style.overflow = "";
       window.removeEventListener("keydown", handleKeyDown);
@@ -77,321 +80,298 @@ export default function ProductModal({
   const multipleImages = item.images.length > 1;
   const embedUrl = item.videoUrl ? getEmbedUrl(item.videoUrl) : null;
   const directVideo = item.videoUrl && isDirectVideo(item.videoUrl);
+  const hasVideo = !!item.videoUrl;
+  const hasPdf = !!item.pdfUrl;
+
+  const tabs = ([
+    { key: "photos" as Tab, label: "Photos", show: hasImage },
+    { key: "video" as Tab, label: "Video", show: hasVideo },
+    { key: "pdf" as Tab, label: "PDF", show: hasPdf },
+  ] as const).filter((t) => t.show);
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8"
-      style={{ background: "rgba(0,0,0,.85)", backdropFilter: "blur(12px)" }}
+      className="fixed inset-0 z-50 flex"
+      style={{
+        background: entered ? "rgba(0,0,0,.92)" : "rgba(0,0,0,0)",
+        backdropFilter: "blur(16px)",
+        transition: "background .4s cubic-bezier(.22,1,.36,1)",
+      }}
       onClick={onClose}
     >
+      {/* ── Full-screen container ── */}
       <div
-        className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl border"
+        className="relative w-full h-full flex flex-col lg:flex-row overflow-hidden"
         style={{
-          background: "#111114",
-          borderColor: "rgba(255,255,255,.08)",
-          boxShadow: "0 40px 100px rgba(0,0,0,.6)",
+          opacity: entered ? 1 : 0,
+          transform: entered ? "scale(1)" : "scale(.97)",
+          transition: "all .45s cubic-bezier(.22,1,.36,1)",
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close button */}
+        {/* ── Close button ── */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-10 w-9 h-9 flex items-center justify-center rounded-full text-white/60 hover:text-white transition-colors"
-          style={{ background: "rgba(0,0,0,.5)", backdropFilter: "blur(8px)" }}
+          className="absolute top-5 right-5 z-20 w-10 h-10 flex items-center justify-center rounded-full text-white/50 hover:text-white"
+          style={{ background: "rgba(0,0,0,.4)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,.08)" }}
         >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M4 4l8 8M12 4l-8 8" />
           </svg>
         </button>
 
-        {/* Media section */}
-        {(hasImage || item.videoUrl) && (
-          <div>
-            {/* Video / Image toggle tabs */}
-            {item.videoUrl && hasImage && (
-              <div className="flex gap-1 px-6 pt-4">
+        {/* ════════════════════════════════════════════════
+            LEFT: Media panel (takes full height, ~60% width on desktop)
+            ════════════════════════════════════════════════ */}
+        <div className="relative flex-1 min-h-[40vh] lg:min-h-0 bg-black flex flex-col">
+          {/* Tab bar (only if multiple media types) */}
+          {tabs.length > 1 && (
+            <div className="flex gap-1 px-5 pt-4 pb-2 relative z-10">
+              {tabs.map((t) => (
                 <button
-                  onClick={() => setShowVideo(false)}
-                  className="text-[10px] px-3 py-1.5 rounded-md tracking-wider uppercase transition-colors"
+                  key={t.key}
+                  onClick={() => setActiveTab(t.key)}
+                  className="text-[10px] px-3.5 py-1.5 rounded-lg tracking-wider uppercase"
                   style={{
-                    background: !showVideo ? "rgba(196,162,101,.15)" : "rgba(255,255,255,.05)",
-                    color: !showVideo ? "#c4a265" : "#666",
-                    border: `1px solid ${!showVideo ? "rgba(196,162,101,.2)" : "transparent"}`,
+                    background: activeTab === t.key ? "rgba(196,162,101,.12)" : "rgba(255,255,255,.04)",
+                    color: activeTab === t.key ? "#c4a265" : "#555",
+                    border: `1px solid ${activeTab === t.key ? "rgba(196,162,101,.15)" : "transparent"}`,
                   }}
                 >
-                  Photos
+                  {t.label}
                 </button>
-                <button
-                  onClick={() => setShowVideo(true)}
-                  className="text-[10px] px-3 py-1.5 rounded-md tracking-wider uppercase transition-colors"
-                  style={{
-                    background: showVideo ? "rgba(196,162,101,.15)" : "rgba(255,255,255,.05)",
-                    color: showVideo ? "#c4a265" : "#666",
-                    border: `1px solid ${showVideo ? "rgba(196,162,101,.2)" : "transparent"}`,
-                  }}
-                >
-                  Video
-                </button>
-              </div>
-            )}
-
-            {/* Video */}
-            {(showVideo || (!hasImage && item.videoUrl)) && item.videoUrl && (
-              <div className="w-full" style={{ aspectRatio: "16/9" }}>
-                {embedUrl ? (
-                  <iframe
-                    src={embedUrl}
-                    className="w-full h-full border-0"
-                    allow="autoplay; fullscreen; picture-in-picture"
-                    allowFullScreen
-                  />
-                ) : directVideo ? (
-                  <video
-                    src={item.videoUrl}
-                    controls
-                    className="w-full h-full object-contain"
-                    style={{ background: "#000" }}
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center" style={{ background: "#0a0a0e" }}>
-                    <a
-                      href={item.videoUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm underline"
-                      style={{ color: "#c4a265" }}
-                    >
-                      Open Video
-                    </a>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Image */}
-            {(!showVideo || !item.videoUrl) && hasImage && (
-              <>
-                <div className="relative w-full" style={{ maxHeight: "60vh" }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={item.images[activeImage].url}
-                    alt={item.images[activeImage].altText || item.name}
-                    className="w-full object-contain"
-                    style={{ maxHeight: "60vh" }}
-                  />
-                </div>
-
-                {/* Thumbnail strip */}
-                {multipleImages && (
-                  <div className="flex gap-2 px-6 py-3 overflow-x-auto" style={{ borderBottom: "1px solid rgba(255,255,255,.06)" }}>
-                    {item.images.map((img, i) => (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        key={img.id}
-                        src={img.url}
-                        alt={img.altText || item.name}
-                        onClick={() => setActiveImage(i)}
-                        className="h-16 w-20 object-cover rounded-lg border flex-shrink-0 transition-opacity cursor-pointer"
-                        style={{
-                          borderColor: i === activeImage ? "#c4a265" : "rgba(255,255,255,.1)",
-                          opacity: i === activeImage ? 1 : 0.5,
-                        }}
-                      />
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        )}
-
-        {/* Content */}
-        <div className="p-6 md:p-8">
-          {/* Header */}
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h2
-                className="text-2xl md:text-3xl font-light"
-                style={{ fontFamily: "'Cormorant Garamond', serif", color: "#eee", lineHeight: 1.2 }}
-              >
-                {item.name}
-              </h2>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {item.category && (
-                  <span
-                    className="text-[9px] px-2.5 py-1 rounded-md tracking-widest uppercase"
-                    style={{ background: "rgba(196,162,101,.1)", color: "#c4a265", border: "1px solid rgba(196,162,101,.15)" }}
-                  >
-                    {item.category}
-                  </span>
-                )}
-                {item.roomLocation && (
-                  <span
-                    className="text-[9px] px-2.5 py-1 rounded-md tracking-wide"
-                    style={{ background: "rgba(255,255,255,.05)", color: "#888" }}
-                  >
-                    {item.roomLocation}
-                  </span>
-                )}
-                {item.finishType && (
-                  <span
-                    className="text-[9px] px-2.5 py-1 rounded-md tracking-wide"
-                    style={{ background: "rgba(255,255,255,.05)", color: "#888" }}
-                  >
-                    {item.finishType}
-                  </span>
-                )}
-              </div>
+              ))}
             </div>
-          </div>
-
-          {/* Description */}
-          {item.description && (
-            <p className="mt-5 text-sm leading-relaxed" style={{ color: "#999" }}>
-              {item.description}
-            </p>
           )}
 
-          {/* Specifications */}
-          {item.specs.length > 0 && (
-            <div className="mt-6 pt-6" style={{ borderTop: "1px solid rgba(255,255,255,.06)" }}>
-              <h3
-                className="text-[10px] uppercase tracking-[.2em] mb-4"
-                style={{ color: "#c4a265" }}
-              >
-                Specifications
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2">
-                {item.specs.map((s) => (
-                  <div key={s.id} className="flex gap-3 text-sm py-1.5" style={{ borderBottom: "1px solid rgba(255,255,255,.03)" }}>
-                    <span className="text-[10px] uppercase tracking-wider min-w-[90px] pt-0.5" style={{ color: "#666" }}>
-                      {s.label}
-                    </span>
-                    <span style={{ color: "#ccc" }}>{s.value}</span>
-                  </div>
-                ))}
-              </div>
+          {/* Photos */}
+          {activeTab === "photos" && hasImage && (
+            <div className="flex-1 relative flex items-center justify-center overflow-hidden">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={item.images[activeImage].url}
+                alt={item.images[activeImage].altText || item.name}
+                className="w-full h-full object-contain"
+              />
+
+              {/* Arrow nav */}
+              {multipleImages && (
+                <>
+                  <button
+                    onClick={() => setActiveImage((i) => (i - 1 + item.images.length) % item.images.length)}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center text-white/40 hover:text-white"
+                    style={{ background: "rgba(0,0,0,.4)", backdropFilter: "blur(8px)" }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M15 18l-6-6 6-6" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => setActiveImage((i) => (i + 1) % item.images.length)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center text-white/40 hover:text-white"
+                    style={{ background: "rgba(0,0,0,.4)", backdropFilter: "blur(8px)" }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M9 18l6-6-6-6" />
+                    </svg>
+                  </button>
+                </>
+              )}
+
+              {/* Image counter */}
+              {multipleImages && (
+                <span
+                  className="absolute top-4 left-5 text-[10px] px-2.5 py-1 rounded-lg tabular-nums"
+                  style={{ background: "rgba(0,0,0,.5)", color: "#888", backdropFilter: "blur(8px)" }}
+                >
+                  {activeImage + 1} / {item.images.length}
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Video */}
+          {activeTab === "video" && item.videoUrl && (
+            <div className="flex-1 flex items-center justify-center">
+              {embedUrl ? (
+                <iframe src={embedUrl} className="w-full h-full border-0" allow="autoplay; fullscreen; picture-in-picture" allowFullScreen />
+              ) : directVideo ? (
+                <video src={item.videoUrl} controls className="w-full h-full object-contain" style={{ background: "#000" }} />
+              ) : (
+                <a href={item.videoUrl} target="_blank" rel="noopener noreferrer" className="text-sm underline" style={{ color: "#c4a265" }}>
+                  Open Video
+                </a>
+              )}
             </div>
           )}
 
           {/* PDF */}
-          {item.pdfUrl && (
-            <div className="mt-6 pt-6" style={{ borderTop: "1px solid rgba(255,255,255,.06)" }}>
-              <h3 className="text-[10px] uppercase tracking-[.2em] mb-3" style={{ color: "#c4a265" }}>
-                Documentation
-              </h3>
-              <div className="flex items-center gap-3 p-3 rounded-lg" style={{ background: "rgba(0,0,0,.25)", border: "1px solid rgba(255,255,255,.06)" }}>
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#c4a265" strokeWidth="1.5">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <path d="M14 2v6h6M9 13h6M9 17h6" />
-                </svg>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm truncate" style={{ color: "#ccc" }}>
-                    {item.pdfUrl.split("/").pop()?.split("?")[0] || "Datasheet.pdf"}
-                  </p>
-                  <p className="text-[10px] uppercase tracking-wider" style={{ color: "#666" }}>PDF Document</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setShowPdf(true)}
-                  className="text-[10px] uppercase tracking-wider px-3 py-2 rounded-md"
-                  style={{ background: "rgba(196,162,101,.15)", color: "#c4a265", border: "1px solid rgba(196,162,101,.2)" }}
-                >
-                  View
-                </button>
+          {activeTab === "pdf" && item.pdfUrl && (
+            <div className="flex-1 flex flex-col">
+              <div className="flex items-center gap-2 px-5 py-2">
                 <a
                   href={item.pdfUrl}
                   download
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[10px] uppercase tracking-wider px-3 py-2 rounded-md"
-                  style={{ background: "rgba(255,255,255,.05)", color: "#bbb", border: "1px solid rgba(255,255,255,.08)" }}
+                  className="text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-lg"
+                  style={{ background: "rgba(196,162,101,.12)", color: "#c4a265", border: "1px solid rgba(196,162,101,.15)" }}
                 >
                   Download
                 </a>
               </div>
+              <iframe src={item.pdfUrl} title={`${item.name} PDF`} className="flex-1 w-full border-0" style={{ background: "#1a1a1a" }} />
             </div>
           )}
 
-          {/* Vendor info */}
-          {(item.vendorName || item.vendorRef) && (
-            <div className="mt-6 pt-6" style={{ borderTop: "1px solid rgba(255,255,255,.06)" }}>
-              <h3
-                className="text-[10px] uppercase tracking-[.2em] mb-3"
-                style={{ color: "#c4a265" }}
+          {/* No image fallback — show swatch */}
+          {activeTab === "photos" && !hasImage && (
+            <div
+              className="flex-1 flex items-center justify-center"
+              style={{
+                background: "linear-gradient(135deg, #111 0%, #1a1a1a 50%, #111 100%)",
+              }}
+            >
+              <span
+                className="text-3xl text-center px-8 leading-snug"
+                style={{ fontFamily: "'Cormorant Garamond', serif", color: "rgba(255,255,255,.15)" }}
               >
-                Vendor
-              </h3>
-              <div className="space-y-1 text-sm">
-                {item.vendorName && (
-                  <p style={{ color: "#ccc" }}>{item.vendorName}</p>
-                )}
-                {item.vendorRef && (
-                  <p className="text-xs" style={{ color: "#666" }}>
-                    Ref: {item.vendorRef}
-                  </p>
-                )}
-                {item.vendorContact && (
-                  <p className="text-xs" style={{ color: "#666" }}>
-                    {item.vendorContact}
-                  </p>
-                )}
-                {item.vendorPhone && (
-                  <p className="text-xs" style={{ color: "#666" }}>
-                    {item.vendorPhone}
-                  </p>
-                )}
-              </div>
+                {item.finishType || item.category || item.name}
+              </span>
+            </div>
+          )}
+
+          {/* Thumbnail strip */}
+          {activeTab === "photos" && multipleImages && (
+            <div
+              className="flex gap-1.5 px-5 py-3 overflow-x-auto flex-shrink-0"
+              style={{ background: "rgba(0,0,0,.4)", borderTop: "1px solid rgba(255,255,255,.04)" }}
+            >
+              {item.images.map((img, i) => (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  key={img.id}
+                  src={img.url}
+                  alt={img.altText || item.name}
+                  onClick={() => setActiveImage(i)}
+                  className="h-14 w-18 object-cover rounded-lg border flex-shrink-0 cursor-pointer"
+                  style={{
+                    borderColor: i === activeImage ? "#c4a265" : "rgba(255,255,255,.08)",
+                    opacity: i === activeImage ? 1 : 0.45,
+                    transition: "all .3s cubic-bezier(.22,1,.36,1)",
+                  }}
+                />
+              ))}
             </div>
           )}
         </div>
-      </div>
 
-      {/* PDF Viewer overlay */}
-      {showPdf && item.pdfUrl && (
+        {/* ════════════════════════════════════════════════
+            RIGHT: Info panel (scrollable sidebar on desktop, bottom sheet on mobile)
+            ════════════════════════════════════════════════ */}
         <div
-          className="fixed inset-0 z-[60] flex flex-col p-4 md:p-6"
-          style={{ background: "rgba(0,0,0,.95)", backdropFilter: "blur(16px)" }}
-          onClick={(e) => {
-            e.stopPropagation();
-            setShowPdf(false);
+          className="w-full lg:w-[420px] xl:w-[460px] flex-shrink-0 overflow-y-auto"
+          style={{
+            background: "#0e0e12",
+            borderLeft: "1px solid rgba(255,255,255,.04)",
           }}
         >
-          <div className="flex items-center justify-between mb-3" onClick={(e) => e.stopPropagation()}>
-            <p className="text-xs uppercase tracking-[.2em]" style={{ color: "#c4a265" }}>
+          <div className="p-6 lg:p-8">
+            {/* Header */}
+            <h2
+              className="text-2xl lg:text-3xl font-light"
+              style={{ fontFamily: "'Cormorant Garamond', serif", color: "#eee", lineHeight: 1.15 }}
+            >
               {item.name}
-            </p>
-            <div className="flex gap-2">
-              <a
-                href={item.pdfUrl}
-                download
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[10px] uppercase tracking-wider px-3 py-2 rounded-md"
-                style={{ background: "rgba(196,162,101,.15)", color: "#c4a265", border: "1px solid rgba(196,162,101,.2)" }}
-              >
-                Download
-              </a>
-              <button
-                onClick={() => setShowPdf(false)}
-                className="w-9 h-9 flex items-center justify-center rounded-full text-white/60 hover:text-white"
-                style={{ background: "rgba(255,255,255,.06)" }}
-              >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M4 4l8 8M12 4l-8 8" />
-                </svg>
-              </button>
+            </h2>
+
+            {/* Badges */}
+            <div className="flex flex-wrap gap-2 mt-3">
+              {item.category && (
+                <span
+                  className="text-[9px] px-2.5 py-1 rounded-md tracking-widest uppercase"
+                  style={{ background: "rgba(196,162,101,.08)", color: "#c4a265", border: "1px solid rgba(196,162,101,.1)" }}
+                >
+                  {item.category}
+                </span>
+              )}
+              {item.roomLocation && (
+                <span className="text-[9px] px-2.5 py-1 rounded-md tracking-wide" style={{ background: "rgba(255,255,255,.04)", color: "#777" }}>
+                  {item.roomLocation}
+                </span>
+              )}
+              {item.finishType && (
+                <span className="text-[9px] px-2.5 py-1 rounded-md tracking-wide" style={{ background: "rgba(255,255,255,.04)", color: "#777" }}>
+                  {item.finishType}
+                </span>
+              )}
+            </div>
+
+            {/* Description */}
+            {item.description && (
+              <p className="mt-6 text-sm leading-relaxed" style={{ color: "#888" }}>
+                {item.description}
+              </p>
+            )}
+
+            {/* Specifications */}
+            {item.specs.length > 0 && (
+              <div className="mt-7 pt-6" style={{ borderTop: "1px solid rgba(255,255,255,.05)" }}>
+                <h3 className="text-[10px] uppercase tracking-[.2em] mb-4" style={{ color: "#c4a265" }}>
+                  Specifications
+                </h3>
+                <div className="space-y-0">
+                  {item.specs.map((s) => (
+                    <div
+                      key={s.id}
+                      className="flex gap-3 text-sm py-2.5"
+                      style={{ borderBottom: "1px solid rgba(255,255,255,.03)" }}
+                    >
+                      <span className="text-[10px] uppercase tracking-wider min-w-[90px] pt-0.5 flex-shrink-0" style={{ color: "#555" }}>
+                        {s.label}
+                      </span>
+                      <span style={{ color: "#ccc" }}>{s.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Vendor info */}
+            {(item.vendorName || item.vendorRef) && (
+              <div className="mt-7 pt-6" style={{ borderTop: "1px solid rgba(255,255,255,.05)" }}>
+                <h3 className="text-[10px] uppercase tracking-[.2em] mb-3" style={{ color: "#c4a265" }}>
+                  Vendor
+                </h3>
+                <div className="space-y-1.5">
+                  {item.vendorName && <p className="text-sm" style={{ color: "#ccc" }}>{item.vendorName}</p>}
+                  {item.vendorRef && <p className="text-xs" style={{ color: "#555" }}>Ref: {item.vendorRef}</p>}
+                  {item.vendorContact && <p className="text-xs" style={{ color: "#555" }}>{item.vendorContact}</p>}
+                  {item.vendorPhone && (
+                    <a href={`tel:${item.vendorPhone}`} className="text-xs block" style={{ color: "#555" }}>
+                      {item.vendorPhone}
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Keyboard hint */}
+            <div className="mt-8 pt-4 flex items-center gap-4" style={{ borderTop: "1px solid rgba(255,255,255,.03)" }}>
+              <div className="flex items-center gap-1.5">
+                <kbd className="text-[9px] px-1.5 py-0.5 rounded" style={{ background: "rgba(255,255,255,.04)", color: "#333" }}>ESC</kbd>
+                <span className="text-[9px]" style={{ color: "#2a2a2a" }}>close</span>
+              </div>
+              {multipleImages && (
+                <div className="flex items-center gap-1.5">
+                  <kbd className="text-[9px] px-1.5 py-0.5 rounded" style={{ background: "rgba(255,255,255,.04)", color: "#333" }}>← →</kbd>
+                  <span className="text-[9px]" style={{ color: "#2a2a2a" }}>navigate</span>
+                </div>
+              )}
             </div>
           </div>
-          <iframe
-            src={item.pdfUrl}
-            title={`${item.name} PDF`}
-            className="flex-1 w-full rounded-xl border"
-            style={{ borderColor: "rgba(255,255,255,.08)", background: "#1a1a1a" }}
-            onClick={(e) => e.stopPropagation()}
-          />
         </div>
-      )}
+      </div>
     </div>
   );
 }
