@@ -102,14 +102,15 @@ export default function ProductModal({ item, onClose }: { item: Item; onClose: (
       }}
     >
       <div
-        className="w-full h-full flex flex-col lg:flex-row"
+        className="w-full h-full flex flex-col lg:flex-row overflow-hidden"
         style={{
           opacity: show ? 1 : 0,
           transition: "opacity .35s ease .05s",
         }}
       >
         {/* ═══ MEDIA PANEL ═══ */}
-        <div className="relative flex-1 min-h-0 flex flex-col bg-black/40">
+        {/* Mobile: capped at 55vh so sidebar stays visible. Desktop: flex-1 fills remaining space */}
+        <div className="relative max-h-[55vh] lg:max-h-none lg:flex-1 min-h-0 flex flex-col bg-black/40">
           {/* Top bar: close + tabs */}
           <div className="flex items-center justify-between px-4 py-3 flex-shrink-0">
             <button
@@ -246,9 +247,10 @@ export default function ProductModal({ item, onClose }: { item: Item; onClose: (
         </div>
 
         {/* ═══ INFO SIDEBAR ═══ */}
+        {/* Mobile: flex-1 fills remaining ~45vh. Desktop: fixed width sidebar */}
         <div
-          className="w-full lg:w-[400px] xl:w-[440px] flex-shrink-0 overflow-y-auto"
-          style={{ background: "#0d0d11", borderLeft: "1px solid rgba(255,255,255,.04)" }}
+          className="flex-1 lg:flex-none w-full lg:w-[400px] xl:w-[440px] overflow-y-auto border-t lg:border-t-0 lg:border-l"
+          style={{ background: "#0d0d11", borderColor: "rgba(255,255,255,.04)" }}
         >
           <div className="p-5 sm:p-7">
             {/* Gold line */}
