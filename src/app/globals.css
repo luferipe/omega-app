@@ -55,6 +55,31 @@ select option:hover {
   color: #ffffff;
 }
 
+/* Catalog animations */
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+@keyframes searchIn {
+  from { opacity: 0; transform: scale(.97) translateY(-8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Search result highlight flash */
+.search-highlight {
+  outline: 1px solid rgba(196, 162, 101, .45) !important;
+  outline-offset: 6px !important;
+  animation: highlightPulse 2.2s cubic-bezier(.22, 1, .36, 1) forwards;
+}
+@keyframes highlightPulse {
+  0%   { outline-color: rgba(196, 162, 101, .6); outline-offset: 8px; }
+  40%  { outline-color: rgba(196, 162, 101, .35); outline-offset: 4px; }
+  100% { outline-color: transparent; outline-offset: 0px; }
+}
+
+/* Smooth scroll for anchor links */
+html { scroll-behavior: smooth; }
+
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
