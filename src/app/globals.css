@@ -84,6 +84,9 @@ select option:hover {
   100% { top: 100%; opacity: 0; }
 }
 
+/* Product card hover gold line */
+.group:hover > .card-gold-line { width: 100% !important; }
+
 /* Smooth scroll for anchor links */
 html { scroll-behavior: smooth; }
 
