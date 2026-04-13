@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { createPortal } from "react-dom";
 
 interface Spec {
   id: string;
@@ -93,10 +94,11 @@ export default function ProductModal({ item, onClose }: { item: Item; onClose: (
     };
   }, [onClose, multi, prev, next]);
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50"
+      className="fixed inset-0"
       style={{
+        zIndex: 9999,
         background: show ? "rgba(8,8,12,.97)" : "rgba(8,8,12,0)",
         transition: "background .35s ease",
       }}
@@ -326,6 +328,7 @@ export default function ProductModal({ item, onClose }: { item: Item; onClose: (
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
