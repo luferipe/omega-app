@@ -15,35 +15,65 @@ export async function GET(
 
   const project = await prisma.project.findUnique({
     where: { id: projectId },
-    include: {
-      sections: {
-        orderBy: { sortOrder: "asc" },
-        include: {
-          items: {
-            orderBy: { sortOrder: "asc" },
-            include: {
-              specs: { orderBy: { sortOrder: "asc" } },
-              images: { orderBy: [{ isPrimary: "desc" }, { sortOrder: "asc" }], take: 1 },
-            },
-          },
-        },
-      },
-    },
   });
 
   if (!project) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  // Filter out sections with zero items
-  const filteredProject = {
-    ...project,
-    sections: project.sections.filter((s) => s.items.length > 0),
+  // Load all items with category hierarchy (same query as catalog page)
+  const items = await prisma.item.findMany({
+    where: { section: { projectId } },
+    orderBy: [{ section: { sortOrder: "asc" } }, { sortOrder: "asc" }],
+    include: {
+      specs: { orderBy: { sortOrder: "asc" } },
+      images: { orderBy: [{ isPrimary: "desc" }, { sortOrder: "asc" }], take: 1 },
+      categoryRef: { include: { parent: true } },
+    },
+  });
+
+  // Group by parent category → subcategory (mirrors catalog page logic)
+  type Row = (typeof items)[number];
+  const groups = new Map<string, { name: string; sort: number; subs: Map<string, Row[]> }>();
+
+  for (const item of items) {
+    if (!item.categoryRef) continue;
+    const cat = item.categoryRef;
+    const parent = cat.parent ?? cat;
+    const subName = cat.parent ? cat.name : "General";
+    const key = parent.id;
+    if (!groups.has(key)) groups.set(key, { name: parent.name, sort: parent.sortOrder, subs: new Map() });
+    const g = groups.get(key)!;
+    if (!g.subs.has(subName)) g.subs.set(subName, []);
+    g.subs.get(subName)!.push(item);
+  }
+
+  const orderedGroups = [...groups.values()].sort((a, b) => a.sort - b.sort);
+
+  // Build PDF data structure grouped by categories
+  const pdfSections = orderedGroups.map((group) => ({
+    name: group.name,
+    subtitle: `${[...group.subs.values()].reduce((n, arr) => n + arr.length, 0)} items`,
+    items: [...group.subs.values()].flat().map((it) => ({
+      name: it.name,
+      category: it.category,
+      roomLocation: it.roomLocation,
+      finishType: it.finishType,
+      vendorName: it.vendorName,
+      specs: it.specs.map((sp) => ({ label: sp.label, value: sp.value })),
+      images: it.images.map((img) => ({ url: img.url, isPrimary: img.isPrimary })),
+    })),
+  }));
+
+  const pdfProject = {
+    name: project.name,
+    address: project.address,
+    standard: project.standard,
+    coverImage: project.coverImage,
+    sections: pdfSections,
   };
 
   try {
-    const buffer = await renderToBuffer(<CatalogPDF project={filteredProject} />);
-    const uint8 = new Uint8Array(buffer);
-
-    return new NextResponse(uint8, {
+    const buffer = await renderToBuffer(<CatalogPDF project={pdfProject} />);
+    return new NextResponse(new Uint8Array(buffer), {
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": `inline; filename="${project.slug}-catalog.pdf"`,
