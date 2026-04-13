@@ -33,8 +33,14 @@ export async function GET(
 
   if (!project) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
+  // Filter out sections with zero items
+  const filteredProject = {
+    ...project,
+    sections: project.sections.filter((s) => s.items.length > 0),
+  };
+
   try {
-    const buffer = await renderToBuffer(<CatalogPDF project={project} />);
+    const buffer = await renderToBuffer(<CatalogPDF project={filteredProject} />);
     const uint8 = new Uint8Array(buffer);
 
     return new NextResponse(uint8, {

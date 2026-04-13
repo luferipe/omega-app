@@ -40,6 +40,7 @@ interface ProjectData {
   name: string;
   address: string | null;
   standard: string | null;
+  coverImage: string | null;
   sections: {
     name: string;
     subtitle: string | null;
@@ -59,8 +60,18 @@ export function CatalogPDF({ project }: { project: ProjectData }) {
   return (
     <Document>
       {/* Cover */}
-      <Page size="A4" style={s.page}>
-        <View style={s.cover}>
+      <Page size="A4" style={{ ...s.page, padding: 0 }}>
+        {/* Cover background image */}
+        {project.coverImage && (
+          <Image
+            src={project.coverImage}
+            style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        )}
+        {/* Dark overlay for readability */}
+        <View style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", backgroundColor: project.coverImage ? "rgba(10,10,14,0.65)" : bg }} />
+
+        <View style={{ ...s.cover, padding: 40 }}>
           <Text style={s.coverLabel}>Finishes &amp; Materials Catalog</Text>
           <Text style={s.coverTitle}>{project.name.split("—")[0]?.trim()}</Text>
           {project.name.includes("—") && (

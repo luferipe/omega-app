@@ -100,6 +100,13 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             </Link>
           )}
           <Link
+            href={`/admin/projects/${projectId}/edit`}
+            className="px-4 py-2 rounded-lg text-xs tracking-wider uppercase"
+            style={{ background: "rgba(255,255,255,.06)", color: "#bbb", border: "1px solid rgba(255,255,255,.08)" }}
+          >
+            Edit Project
+          </Link>
+          <Link
             href={`/admin/projects/${projectId}/items/new`}
             className="px-4 py-2 rounded-lg text-xs tracking-wider uppercase"
             style={{ background: "#c4a265", color: "#060606" }}
