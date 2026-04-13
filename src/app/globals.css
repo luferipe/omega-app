@@ -87,8 +87,8 @@ select option:hover {
 /* Product card hover gold line */
 .group:hover > .card-gold-line { width: 100% !important; }
 
-/* Smooth scroll for anchor links */
-html { scroll-behavior: smooth; }
+/* NOTE: smooth scroll is applied programmatically via scrollIntoView({ behavior: "smooth" })
+   instead of globally, to avoid scroll jumps when modal opens/closes */
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; }
