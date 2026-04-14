@@ -360,8 +360,31 @@ const s = StyleSheet.create({
     color: inkSoft,
     lineHeight: 1.55,
     marginTop: 10,
-    marginBottom: 12,
+    marginBottom: 6,
     letterSpacing: 0.1,
+    fontFamily: "Helvetica",
+  },
+  itemFinishPill: {
+    alignSelf: "flex-start",
+    marginTop: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    backgroundColor: "rgba(196,162,101,0.1)",
+    borderRadius: 2,
+  },
+  itemFinishText: {
+    fontSize: 7,
+    color: gold,
+    letterSpacing: 1.5,
+    textTransform: "uppercase",
+    fontFamily: "Helvetica-Bold",
+  },
+  vendorRef: {
+    fontSize: 6.5,
+    color: inkLight,
+    letterSpacing: 1.2,
+    marginTop: 2,
+    fontFamily: "Helvetica-Oblique",
   },
   itemDivider: {
     width: 28,
@@ -447,8 +470,10 @@ interface ProjectData {
       name: string;
       category: string | null;
       roomLocation: string | null;
+      description: string | null;
       finishType: string | null;
       vendorName: string | null;
+      vendorRef: string | null;
       specs: { label: string; value: string }[];
       images: { url: string; isPrimary: boolean }[];
     }[];
@@ -635,6 +660,16 @@ export function CatalogPDF({ project }: { project: ProjectData }) {
                               <Text style={s.itemRoom}>{item.roomLocation}</Text>
                             )}
 
+                            {item.finishType && (
+                              <View style={s.itemFinishPill}>
+                                <Text style={s.itemFinishText}>{item.finishType}</Text>
+                              </View>
+                            )}
+
+                            {item.description && (
+                              <Text style={s.itemDescription}>{item.description}</Text>
+                            )}
+
                             <View style={s.itemDivider} />
 
                             {item.specs.length > 0 && (
@@ -648,7 +683,14 @@ export function CatalogPDF({ project }: { project: ProjectData }) {
                               </View>
                             )}
 
-                            {item.vendorName && <Text style={s.vendor}>{item.vendorName}</Text>}
+                            {item.vendorName && (
+                              <View>
+                                <Text style={s.vendor}>{item.vendorName}</Text>
+                                {item.vendorRef && (
+                                  <Text style={s.vendorRef}>Ref · {item.vendorRef}</Text>
+                                )}
+                              </View>
+                            )}
                           </View>
                         </View>
                       </View>
