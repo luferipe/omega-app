@@ -54,7 +54,7 @@ const s = StyleSheet.create({
   },
   coverTitle: {
     fontSize: 56,
-    fontFamily: "Helvetica-Light",
+    fontFamily: "Helvetica",
     color: "#f5f5f5",
     letterSpacing: -1.5,
     lineHeight: 1,
@@ -100,7 +100,7 @@ const s = StyleSheet.create({
   },
   coverNumber: {
     fontSize: 120,
-    fontFamily: "Helvetica-Light",
+    fontFamily: "Helvetica",
     color: "rgba(196,162,101,0.08)",
     position: "absolute",
     bottom: 20,
@@ -131,7 +131,7 @@ const s = StyleSheet.create({
   },
   tocTitle: {
     fontSize: 32,
-    fontFamily: "Helvetica-Light",
+    fontFamily: "Helvetica",
     color: ink,
     letterSpacing: -0.5,
   },
@@ -150,7 +150,7 @@ const s = StyleSheet.create({
   },
   tocName: {
     fontSize: 13,
-    fontFamily: "Helvetica-Light",
+    fontFamily: "Helvetica",
     color: ink,
     flex: 1,
   },
@@ -171,7 +171,7 @@ const s = StyleSheet.create({
   },
   sectionNumberBig: {
     fontSize: 140,
-    fontFamily: "Helvetica-Light",
+    fontFamily: "Helvetica",
     color: gold,
     opacity: 0.15,
     letterSpacing: -4,
@@ -186,7 +186,7 @@ const s = StyleSheet.create({
   },
   sectionMainTitle: {
     fontSize: 44,
-    fontFamily: "Helvetica-Light",
+    fontFamily: "Helvetica",
     color: ink,
     letterSpacing: -1,
     textAlign: "center",
