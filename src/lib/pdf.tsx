@@ -707,20 +707,43 @@ export function CatalogPDF({ project }: { project: ProjectData }) {
 
       {/* ═══════════════ DISCLAIMER / BACK COVER ═══════════════ */}
       <Page size="A4" style={s.coverPage}>
-        <View style={s.coverContainer}>
+        <View
+          style={{
+            flex: 1,
+            padding: 60,
+            flexDirection: "column",
+          }}
+        >
+          {/* Top */}
           <Text style={s.coverTopBrand}>Omega Custom Homes</Text>
 
-          <View style={{ flex: 1, justifyContent: "center", alignItems: "center", paddingHorizontal: 40 }}>
-            <Text style={s.coverLabel}>Disclaimer</Text>
-            <View style={{ ...s.coverLine, alignSelf: "center" }} />
+          {/* Center content */}
+          <View
+            style={{
+              flexGrow: 1,
+              justifyContent: "center",
+              alignItems: "center",
+              paddingHorizontal: 20,
+            }}
+          >
+            <Text style={{ ...s.coverLabel, textAlign: "center" }}>Disclaimer</Text>
+            <View
+              style={{
+                width: 50,
+                height: 1,
+                backgroundColor: gold,
+                marginTop: 24,
+                marginBottom: 28,
+              }}
+            />
             <Text
               style={{
-                fontSize: 10,
+                fontSize: 11,
                 color: "rgba(255,255,255,0.7)",
-                lineHeight: 1.8,
+                lineHeight: 1.75,
                 fontFamily: "Helvetica-Oblique",
                 textAlign: "center",
-                maxWidth: 400,
+                maxWidth: 420,
               }}
             >
               All descriptions, plans, finishes, features, and options are subject to change,
@@ -728,7 +751,14 @@ export function CatalogPDF({ project }: { project: ProjectData }) {
             </Text>
           </View>
 
-          <View style={s.coverBottom}>
+          {/* Bottom */}
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "flex-end",
+            }}
+          >
             <Text style={s.coverConfidential}>Confidential</Text>
             <Text style={s.coverConfidential}>{new Date().getFullYear()}</Text>
           </View>

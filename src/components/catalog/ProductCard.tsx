@@ -109,20 +109,20 @@ export default function ProductCard({ item, index = 0, sectionNumber = "01" }: {
         onClick={() => setOpen(true)}
       >
         <div
-          className={`flex flex-col ${reverse ? "md:flex-row-reverse" : "md:flex-row"} gap-5 md:gap-8 items-stretch`}
+          className={`flex flex-col ${reverse ? "md:flex-row-reverse" : "md:flex-row"} gap-5 md:gap-8 lg:gap-10 items-start`}
         >
           {/* ═══ Image / Media panel ═══ */}
           <div
-            className="relative overflow-hidden rounded-xl md:rounded-2xl flex-shrink-0"
-            style={{
-              background: "#17171a",
-              border: "1px solid rgba(255,255,255,.05)",
-              width: "100%",
-              aspectRatio: wide ? "4/3" : "5/4",
-            }}
+            className={`w-full flex-shrink-0 ${wide ? "md:w-[440px] lg:w-[520px]" : "md:w-[380px] lg:w-[440px]"}`}
           >
-            <div className={wide ? "md:w-[440px] lg:w-[520px]" : "md:w-[380px] lg:w-[440px]"}
-              style={{ position: "absolute", inset: 0 }}>
+            <div
+              className="relative overflow-hidden rounded-xl md:rounded-2xl w-full"
+              style={{
+                background: "#17171a",
+                border: "1px solid rgba(255,255,255,.05)",
+                aspectRatio: wide ? "4/3" : "5/4",
+              }}
+            >
               {hasImage ? (
                 <>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
