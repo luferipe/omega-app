@@ -704,6 +704,36 @@ export function CatalogPDF({ project }: { project: ProjectData }) {
           </React.Fragment>
         );
       })}
+
+      {/* ═══════════════ DISCLAIMER / BACK COVER ═══════════════ */}
+      <Page size="A4" style={s.coverPage}>
+        <View style={s.coverContainer}>
+          <Text style={s.coverTopBrand}>Omega Custom Homes</Text>
+
+          <View style={{ flex: 1, justifyContent: "center", alignItems: "center", paddingHorizontal: 40 }}>
+            <Text style={s.coverLabel}>Disclaimer</Text>
+            <View style={{ ...s.coverLine, alignSelf: "center" }} />
+            <Text
+              style={{
+                fontSize: 10,
+                color: "rgba(255,255,255,0.7)",
+                lineHeight: 1.8,
+                fontFamily: "Helvetica-Oblique",
+                textAlign: "center",
+                maxWidth: 400,
+              }}
+            >
+              All descriptions, plans, finishes, features, and options are subject to change,
+              modification, or substitution at the builder&rsquo;s sole discretion without prior notice.
+            </Text>
+          </View>
+
+          <View style={s.coverBottom}>
+            <Text style={s.coverConfidential}>Confidential</Text>
+            <Text style={s.coverConfidential}>{new Date().getFullYear()}</Text>
+          </View>
+        </View>
+      </Page>
     </Document>
   );
 }

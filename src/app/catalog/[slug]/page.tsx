@@ -155,7 +155,7 @@ export default async function CatalogPage({ params }: { params: Promise<{ slug: 
               />
             </ScrollReveal>
 
-            <CategorySection subCategories={subCategories} />
+            <CategorySection subCategories={subCategories} sectionNumber={String(gIdx + 1).padStart(2, "0")} />
           </div>
         );
       })}
@@ -168,12 +168,12 @@ export default async function CatalogPage({ params }: { params: Promise<{ slug: 
             title="Other"
             subtitle={`${uncategorized.length} item${uncategorized.length !== 1 ? "s" : ""}`}
           />
-          <section className="max-w-[1300px] mx-auto px-6 sm:px-10 pb-20">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <section className="max-w-[1200px] mx-auto px-6 sm:px-10 lg:px-16 pb-24">
+            <div className="space-y-0">
               {uncategorized.map((item, idx) => (
-                <ScrollReveal key={item.id} delay={idx % 3 * 100}>
+                <ScrollReveal key={item.id} delay={(idx % 4) * 80}>
                   <div id={`item-${item.id}`}>
-                    <ProductCard item={item} />
+                    <ProductCard item={item} index={idx} sectionNumber={String(orderedGroups.length + 1).padStart(2, "0")} />
                   </div>
                 </ScrollReveal>
               ))}
@@ -183,19 +183,35 @@ export default async function CatalogPage({ params }: { params: Promise<{ slug: 
       )}
 
       {/* Footer */}
-      <footer className="text-center py-20 border-t" style={{ borderColor: "rgba(255,255,255,.05)" }}>
-        <h3
-          className="text-2xl font-light"
-          style={{ fontFamily: "'Cormorant Garamond', serif", color: "#c4a265" }}
-        >
-          Omega Custom Homes
-        </h3>
-        <p className="text-xs mt-2" style={{ color: "#444" }}>
-          {project.name} &bull; {project.address}
-        </p>
-        <p className="text-[10px] mt-1" style={{ color: "#333" }}>
-          Confidential
-        </p>
+      <footer className="py-20 border-t" style={{ borderColor: "rgba(255,255,255,.05)" }}>
+        <div className="max-w-[900px] mx-auto px-6 text-center">
+          <h3
+            className="text-2xl font-light"
+            style={{ fontFamily: "'Cormorant Garamond', serif", color: "#c4a265" }}
+          >
+            Omega Custom Homes
+          </h3>
+          <p className="text-xs mt-2" style={{ color: "#444" }}>
+            {project.name} &bull; {project.address}
+          </p>
+          <p className="text-[10px] mt-1 tracking-[.3em] uppercase" style={{ color: "#333" }}>
+            Confidential
+          </p>
+
+          {/* Disclaimer */}
+          <div
+            className="mt-12 pt-8 mx-auto max-w-[700px]"
+            style={{ borderTop: "1px solid rgba(255,255,255,.04)" }}
+          >
+            <p
+              className="text-[10px] italic leading-[1.7]"
+              style={{ color: "#444", fontFamily: "'Cormorant Garamond', serif" }}
+            >
+              All descriptions, plans, finishes, features, and options are subject to change,
+              modification, or substitution at the builder&rsquo;s sole discretion without prior notice.
+            </p>
+          </div>
+        </div>
       </footer>
     </div>
   );

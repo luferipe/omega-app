@@ -31,247 +31,270 @@ interface Item {
   images: Image[];
 }
 
-function getSwatchGradient(finishType: string | null): string {
-  const f = (finishType || "").toLowerCase();
-  if (f.includes("gold") && f.includes("black")) return "linear-gradient(135deg,#1a1a1a 50%,#9a7a30 50%)";
-  if (f.includes("gold") || f.includes("polished gold")) return "linear-gradient(135deg,#8a6a20,#c4a255,#a08035)";
-  if (f.includes("nickel")) return "linear-gradient(135deg,#6a6a6a,#a0a0a0,#7a7a7a)";
-  if (f.includes("black")) return "linear-gradient(135deg,#0e0e0e,#1e1e1e,#0a0a0a)";
-  if (f.includes("brass") || f.includes("bronze")) return "linear-gradient(135deg,#7a5a18,#b89040,#6a4a10)";
-  if (f.includes("chrome")) return "linear-gradient(135deg,#b0b0b0,#d8d8d8,#c0c0c0)";
-  if (f.includes("oak") || f.includes("wood")) return "linear-gradient(135deg,#5a4020,#7a6040,#4a3010)";
-  if (f.includes("white")) return "linear-gradient(135deg,#d0d0d0,#e8e8e8,#c8c8c8)";
-  return "linear-gradient(135deg,#0e0e0e,#171717,#0b0b0b)";
+function mediaType(item: Item): "video" | "image" | "pdf" | "none" {
+  if (item.videoUrl) return "video";
+  if (item.images.length > 0) return "image";
+  if (item.pdfUrl) return "pdf";
+  return "none";
 }
 
-export default function ProductCard({ item }: { item: Item }) {
+function MediaBadge({ type, imageCount }: { type: "video" | "image" | "pdf" | "none"; imageCount: number }) {
+  const config = {
+    video: { label: "Video", color: "#e5a5a5", bg: "rgba(200,80,80,.12)", border: "rgba(200,80,80,.25)" },
+    image: { label: imageCount > 1 ? `${imageCount} Photos` : "Photo", color: "#c4a265", bg: "rgba(196,162,101,.12)", border: "rgba(196,162,101,.25)" },
+    pdf: { label: "PDF", color: "#a5c5e5", bg: "rgba(80,150,220,.12)", border: "rgba(80,150,220,.25)" },
+    none: { label: "Swatch", color: "#888", bg: "rgba(255,255,255,.04)", border: "rgba(255,255,255,.08)" },
+  }[type];
+
+  const Icon = () => {
+    if (type === "video")
+      return (
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M8 5v14l11-7z" />
+        </svg>
+      );
+    if (type === "image")
+      return (
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <rect x="3" y="3" width="18" height="18" rx="2" />
+          <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" />
+          <path d="M21 15l-5-5L5 21" />
+        </svg>
+      );
+    if (type === "pdf")
+      return (
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <path d="M14 2v6h6" />
+        </svg>
+      );
+    return (
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <circle cx="12" cy="12" r="9" />
+      </svg>
+    );
+  };
+
+  return (
+    <span
+      className="inline-flex items-center gap-1.5 text-[9px] px-2.5 py-1 rounded-full tracking-[.2em] uppercase"
+      style={{ background: config.bg, color: config.color, border: `1px solid ${config.border}` }}
+    >
+      <Icon />
+      {config.label}
+    </span>
+  );
+}
+
+export default function ProductCard({ item, index = 0, sectionNumber = "01" }: { item: Item; index?: number; sectionNumber?: string }) {
   const [open, setOpen] = useState(false);
   const hasImage = item.images.length > 0;
-  const imageCount = item.images.length;
-  const specPreview = item.specs.slice(0, 3);
-  const hasMedia = !!(item.videoUrl || item.pdfUrl);
+  const specPreview = item.specs.slice(0, 4);
+  const type = mediaType(item);
+
+  // Alternate direction + asymmetric indents for editorial rhythm
+  const reverse = index % 2 === 1;
+  const wide = index % 3 === 0;
+  const indent =
+    index % 4 === 1 ? "md:ml-8" :
+    index % 4 === 2 ? "md:mr-8" :
+    index % 4 === 3 ? "md:ml-4" : "";
+
+  const itemNum = String(index + 1).padStart(2, "0");
 
   return (
     <>
-      <div
-        className="group relative rounded-2xl overflow-hidden cursor-pointer"
-        style={{
-          background: "#101014",
-          border: "1px solid rgba(255,255,255,.05)",
-        }}
+      <article
+        className={`group cursor-pointer ${indent}`}
         onClick={() => setOpen(true)}
       >
-        {/* ── Image / Swatch area ── */}
-        <div className="relative h-60 overflow-hidden">
-          {hasImage ? (
-            <>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={item.images[0].url}
-                alt={item.images[0].altText || item.name}
-                className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-              />
-              {/* Gradient overlay on hover */}
-              <div
-                className="absolute inset-0 opacity-0 group-hover:opacity-100"
-                style={{
-                  background: "linear-gradient(180deg, transparent 30%, rgba(10,10,14,.8) 100%)",
-                  transition: "opacity .5s cubic-bezier(.22,1,.36,1)",
-                }}
-              />
-            </>
-          ) : (
-            <div
-              className="w-full h-full flex items-center justify-center relative"
-              style={{ background: getSwatchGradient(item.finishType) }}
-            >
-              {/* Decorative pattern overlay */}
-              <div
-                className="absolute inset-0 opacity-10"
-                style={{
-                  backgroundImage: "radial-gradient(circle at 30% 40%, rgba(255,255,255,.08) 0%, transparent 60%)",
-                }}
-              />
-              <span
-                className="text-lg text-center px-6 leading-snug relative z-10"
-                style={{
-                  fontFamily: "'Cormorant Garamond', serif",
-                  color: "rgba(255,255,255,.55)",
-                  textShadow: "0 2px 12px rgba(0,0,0,.6)",
-                }}
-              >
-                {item.finishType || item.category || ""}
-              </span>
-            </div>
-          )}
-
-          {/* Top-right: Category badge */}
-          {item.category && (
-            <span
-              className="absolute top-3 right-3 text-[8px] px-2.5 py-1 rounded-lg tracking-[.2em] uppercase z-10"
-              style={{
-                background: "rgba(0,0,0,.55)",
-                backdropFilter: "blur(12px)",
-                color: "#c4a265",
-                border: "1px solid rgba(196,162,101,.12)",
-              }}
-            >
-              {item.category}
-            </span>
-          )}
-
-          {/* Bottom-left: Room location */}
-          {item.roomLocation && (
-            <span
-              className="absolute bottom-3 left-3 text-[9px] px-2.5 py-1 rounded-lg tracking-wide z-10"
-              style={{
-                background: "rgba(0,0,0,.55)",
-                backdropFilter: "blur(12px)",
-                color: "rgba(255,255,255,.5)",
-              }}
-            >
-              {item.roomLocation}
-            </span>
-          )}
-
-          {/* Bottom-right: Media indicators */}
-          <div className="absolute bottom-3 right-3 flex gap-1.5 z-10">
-            {imageCount > 1 && (
-              <span
-                className="flex items-center gap-1 text-[9px] px-2 py-1 rounded-lg tabular-nums"
-                style={{ background: "rgba(0,0,0,.55)", backdropFilter: "blur(12px)", color: "rgba(255,255,255,.45)" }}
-              >
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <rect x="3" y="3" width="18" height="18" rx="2" />
-                  <path d="M3 15l5-5 4 4 4-4 5 5" />
-                </svg>
-                {imageCount}
-              </span>
-            )}
-            {item.videoUrl && (
-              <span
-                className="w-7 h-7 flex items-center justify-center rounded-lg"
-                style={{ background: "rgba(0,0,0,.55)", backdropFilter: "blur(12px)" }}
-              >
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="#c4a265">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-              </span>
-            )}
-            {item.pdfUrl && (
-              <span
-                className="w-7 h-7 flex items-center justify-center rounded-lg"
-                style={{ background: "rgba(0,0,0,.55)", backdropFilter: "blur(12px)" }}
-              >
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#c4a265" strokeWidth="2">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <path d="M14 2v6h6" />
-                </svg>
-              </span>
-            )}
-          </div>
-
-          {/* Hover CTA — appears on hover */}
+        <div
+          className={`flex flex-col ${reverse ? "md:flex-row-reverse" : "md:flex-row"} gap-5 md:gap-8 items-stretch`}
+        >
+          {/* ═══ Image / Media panel ═══ */}
           <div
-            className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 z-10"
-            style={{ transition: "opacity .4s cubic-bezier(.22,1,.36,1)" }}
+            className="relative overflow-hidden rounded-xl md:rounded-2xl flex-shrink-0"
+            style={{
+              background: "#17171a",
+              border: "1px solid rgba(255,255,255,.05)",
+              width: "100%",
+              aspectRatio: wide ? "4/3" : "5/4",
+            }}
           >
-            <span
-              className="text-[10px] uppercase tracking-[.25em] px-5 py-2.5 rounded-full"
-              style={{
-                background: "rgba(196,162,101,.15)",
-                backdropFilter: "blur(16px)",
-                border: "1px solid rgba(196,162,101,.25)",
-                color: "#c4a265",
-                transform: "translateY(8px)",
-                transition: "transform .4s cubic-bezier(.22,1,.36,1)",
-              }}
-            >
-              View Details
-            </span>
-          </div>
-        </div>
-
-        {/* ── Body ── */}
-        <div className="p-5 pb-5">
-          {/* Item name */}
-          <h4
-            className="text-[15px] font-light leading-snug"
-            style={{ fontFamily: "'Cormorant Garamond', serif", color: "#eee" }}
-          >
-            {item.name}
-          </h4>
-
-          {/* Description preview */}
-          {item.description && (
-            <p
-              className="text-[11px] mt-2 leading-relaxed line-clamp-2"
-              style={{ color: "#555" }}
-            >
-              {item.description}
-            </p>
-          )}
-
-          {/* Specs preview */}
-          {specPreview.length > 0 && (
-            <div className="mt-3.5 pt-3.5 space-y-1.5" style={{ borderTop: "1px solid rgba(255,255,255,.04)" }}>
-              {specPreview.map((s) => (
-                <div key={s.id} className="flex gap-2 text-[11px]">
-                  <span className="text-[9px] uppercase tracking-[.15em] min-w-[72px] pt-px flex-shrink-0" style={{ color: "#c4a265" }}>
-                    {s.label}
-                  </span>
-                  <span className="truncate" style={{ color: "#888" }}>{s.value}</span>
-                </div>
-              ))}
-              {item.specs.length > 3 && (
-                <p className="text-[9px] tracking-wider uppercase pt-1" style={{ color: "#333" }}>
-                  +{item.specs.length - 3} more specs
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* Footer: Vendor + finish indicator */}
-          <div
-            className="mt-4 pt-3.5 flex items-center justify-between"
-            style={{ borderTop: "1px solid rgba(255,255,255,.04)" }}
-          >
-            {item.vendorName ? (
-              <p className="text-[9px] uppercase tracking-[.2em] truncate" style={{ color: "#3a3a3a" }}>
-                {item.vendorName}
-              </p>
-            ) : (
-              <span />
-            )}
-
-            {/* Finish type dot */}
-            {item.finishType && (
-              <div className="flex items-center gap-1.5 flex-shrink-0">
-                <span
-                  className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+            <div className={wide ? "md:w-[440px] lg:w-[520px]" : "md:w-[380px] lg:w-[440px]"}
+              style={{ position: "absolute", inset: 0 }}>
+              {hasImage ? (
+                <>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={item.images[0].url}
+                    alt={item.images[0].altText || item.name}
+                    className="w-full h-full object-cover transition-transform duration-[900ms] ease-out group-hover:scale-[1.04]"
+                    draggable={false}
+                  />
+                  {/* Subtle vignette */}
+                  <div
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100"
+                    style={{
+                      background: "linear-gradient(180deg, transparent 40%, rgba(0,0,0,.5) 100%)",
+                      transition: "opacity .6s cubic-bezier(.22,1,.36,1)",
+                    }}
+                  />
+                </>
+              ) : (
+                <div
+                  className="w-full h-full flex items-center justify-center"
                   style={{
-                    background: getSwatchGradient(item.finishType),
-                    border: "1px solid rgba(255,255,255,.08)",
+                    background: "linear-gradient(135deg, #111 0%, #1a1a1e 50%, #0e0e12 100%)",
                   }}
-                />
-                <span className="text-[9px] tracking-wide" style={{ color: "#333" }}>
+                >
+                  <span
+                    className="text-2xl px-8 text-center leading-snug"
+                    style={{
+                      fontFamily: "'Cormorant Garamond', serif",
+                      color: "rgba(255,255,255,.3)",
+                      fontStyle: "italic",
+                    }}
+                  >
+                    {item.finishType || item.category || item.name}
+                  </span>
+                </div>
+              )}
+
+              {/* Media type badge — top-left */}
+              <div className="absolute top-4 left-4 z-10">
+                <MediaBadge type={type} imageCount={item.images.length} />
+              </div>
+
+              {/* Room location — bottom-left */}
+              {item.roomLocation && (
+                <span
+                  className="absolute bottom-4 left-4 z-10 text-[9px] px-2.5 py-1 rounded-full tracking-wide"
+                  style={{
+                    background: "rgba(0,0,0,.55)",
+                    backdropFilter: "blur(12px)",
+                    color: "rgba(255,255,255,.65)",
+                    border: "1px solid rgba(255,255,255,.06)",
+                  }}
+                >
+                  {item.roomLocation}
+                </span>
+              )}
+
+              {/* Hover CTA — bottom-right */}
+              <div
+                className="absolute bottom-4 right-4 z-10 opacity-0 group-hover:opacity-100"
+                style={{ transition: "opacity .4s cubic-bezier(.22,1,.36,1)" }}
+              >
+                <span
+                  className="inline-flex items-center gap-1.5 text-[9px] uppercase tracking-[.25em] px-3.5 py-2 rounded-full"
+                  style={{
+                    background: "rgba(196,162,101,.18)",
+                    backdropFilter: "blur(16px)",
+                    border: "1px solid rgba(196,162,101,.3)",
+                    color: "#c4a265",
+                  }}
+                >
+                  View
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* ═══ Content panel ═══ */}
+          <div className="flex-1 min-w-0 py-2 md:py-4">
+            {/* Index tag */}
+            <p
+              className="text-[9px] tracking-[.3em] uppercase mb-3"
+              style={{ color: "#c4a265", fontFamily: "'Inter', sans-serif", fontWeight: 600 }}
+            >
+              {sectionNumber} <span style={{ color: "rgba(196,162,101,.3)" }}>·</span> {itemNum}
+            </p>
+
+            {/* Name */}
+            <h3
+              className="text-[22px] md:text-[26px] lg:text-[30px] font-light leading-[1.1] tracking-tight"
+              style={{ fontFamily: "'Cormorant Garamond', serif", color: "#f0ebe0" }}
+            >
+              {item.name}
+            </h3>
+
+            {/* Finish pill */}
+            {item.finishType && (
+              <div className="mt-3">
+                <span
+                  className="inline-flex items-center text-[9px] px-2.5 py-1.5 rounded-full tracking-[.2em] uppercase"
+                  style={{
+                    background: "rgba(196,162,101,.08)",
+                    color: "#c4a265",
+                    border: "1px solid rgba(196,162,101,.15)",
+                    fontWeight: 600,
+                  }}
+                >
                   {item.finishType}
                 </span>
+              </div>
+            )}
+
+            {/* Description */}
+            {item.description && (
+              <p
+                className="mt-4 text-[13px] leading-[1.7] line-clamp-3"
+                style={{ color: "#999", maxWidth: 540 }}
+              >
+                {item.description}
+              </p>
+            )}
+
+            {/* Gold mini-divider */}
+            <div className="w-7 h-px my-5" style={{ background: "#c4a265" }} />
+
+            {/* Specs */}
+            {specPreview.length > 0 && (
+              <dl className="space-y-2">
+                {specPreview.map((s) => (
+                  <div key={s.id} className="flex gap-4 items-baseline">
+                    <dt
+                      className="text-[9px] uppercase tracking-[.18em] w-[90px] flex-shrink-0"
+                      style={{ color: "#c4a265", fontWeight: 600 }}
+                    >
+                      {s.label}
+                    </dt>
+                    <dd className="text-[12px] flex-1" style={{ color: "#ccc", lineHeight: 1.5 }}>
+                      {s.value}
+                    </dd>
+                  </div>
+                ))}
+                {item.specs.length > 4 && (
+                  <p className="text-[9px] tracking-[.2em] uppercase pt-1" style={{ color: "#555" }}>
+                    + {item.specs.length - 4} more specs
+                  </p>
+                )}
+              </dl>
+            )}
+
+            {/* Vendor */}
+            {item.vendorName && (
+              <div className="mt-6 pt-4" style={{ borderTop: "1px solid rgba(255,255,255,.05)" }}>
+                <p className="text-[9px] uppercase tracking-[.25em]" style={{ color: "#777", fontWeight: 600 }}>
+                  {item.vendorName}
+                </p>
+                {item.vendorRef && (
+                  <p className="text-[10px] italic mt-1" style={{ color: "#555" }}>
+                    Ref · {item.vendorRef}
+                  </p>
+                )}
               </div>
             )}
           </div>
         </div>
 
-        {/* ── Bottom gold accent line — animates on hover ── */}
-        <div
-          className="card-gold-line absolute bottom-0 left-0 h-[2px]"
-          style={{
-            width: "0%",
-            background: "linear-gradient(90deg, #c4a265, #d4b87a, #c4a265)",
-            transition: "width .6s cubic-bezier(.22,1,.36,1)",
-          }}
-        />
-      </div>
+        {/* Hairline divider between items */}
+        <div className="mt-10 md:mt-14 h-px" style={{ background: "rgba(255,255,255,.04)" }} />
+      </article>
 
       {open && <ProductModal item={item} onClose={() => setOpen(false)} />}
     </>
