@@ -1,7 +1,6 @@
 import { redirect, notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import AdminShell from "@/components/admin/AdminShell";
-import CoverImageUploader from "@/components/admin/CoverImageUploader";
 
 export default async function EditProjectPage({ params }: { params: Promise<{ projectId: string }> }) {
   const { projectId } = await params;
@@ -26,7 +25,6 @@ export default async function EditProjectPage({ params }: { params: Promise<{ pr
         address: (formData.get("address") as string) || null,
         standard: (formData.get("standard") as string) || null,
         matterportUrl: (formData.get("matterportUrl") as string) || null,
-        coverImage: (formData.get("coverImage") as string) || null,
         published: formData.get("published") === "on",
       },
     });
@@ -51,9 +49,6 @@ export default async function EditProjectPage({ params }: { params: Promise<{ pr
         </h2>
 
         <form action={updateProject} className="space-y-5">
-          {/* Cover Image */}
-          <CoverImageUploader currentImage={project.coverImage} projectId={projectId} />
-
           <div>
             <label className="block text-[10px] uppercase tracking-widest mb-1.5" style={{ color: "#aaa" }}>Project Name *</label>
             <input name="name" required defaultValue={project.name} className={inputClass} style={inputStyle}  />

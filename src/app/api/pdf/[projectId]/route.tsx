@@ -67,7 +67,8 @@ export async function GET(
     name: project.name,
     address: project.address,
     standard: project.standard,
-    coverImage: project.coverImage,
+    client: project.client,
+    coverImage: null,
     sections: pdfSections,
   };
 

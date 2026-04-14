@@ -1,45 +1,407 @@
 import React from "react";
 import { Document, Page, Text, View, StyleSheet, Image } from "@react-pdf/renderer";
 
-// Using built-in Helvetica — no external font fetching, no fontkit parsing issues.
-
+// Luxury catalog palette
 const gold = "#c4a265";
-const bg = "#0a0a0c";
-const cardBg = "#111114";
-const border = "#1a1a1e";
+const goldLight = "#d4b87a";
+const bg = "#0a0a0e";
+const pageBg = "#ffffff";
+const ink = "#1a1a1a";
+const inkSoft = "#4a4a4a";
+const inkLight = "#8a8a8a";
+const divider = "#e5ddd0";
+const card = "#faf8f4";
 
 const s = StyleSheet.create({
-  page: { backgroundColor: bg, padding: 40, fontFamily: "Helvetica", color: "#999", fontSize: 9 },
-  cover: { flex: 1, justifyContent: "center", alignItems: "center", paddingVertical: 200 },
-  coverLabel: { fontSize: 7, letterSpacing: 6, color: gold, textTransform: "uppercase", marginBottom: 20 },
-  coverTitle: { fontSize: 42, fontWeight: 300, color: "#eee", letterSpacing: -1 },
-  coverSubtitle: { fontSize: 18, fontWeight: 300, color: "rgba(255,255,255,0.3)", marginTop: 4 },
-  coverLine: { width: 40, height: 1, backgroundColor: gold, marginVertical: 30 },
-  coverAddress: { fontSize: 8, letterSpacing: 3, color: "#444" },
+  // Light, magazine-style pages (luxury print feel)
+  page: {
+    backgroundColor: pageBg,
+    paddingTop: 60,
+    paddingBottom: 60,
+    paddingHorizontal: 50,
+    fontFamily: "Helvetica",
+    color: inkSoft,
+    fontSize: 9,
+  },
 
-  sectionBreak: { paddingVertical: 60, alignItems: "center" },
-  sectionTitle: { fontSize: 24, fontWeight: 300, color: "#eee" },
-  sectionSub: { fontSize: 8, color: "#555", marginTop: 6, letterSpacing: 1 },
-  sectionLine: { width: 30, height: 1, backgroundColor: gold, marginTop: 12 },
+  /* ══════ COVER PAGE ══════ */
+  coverPage: {
+    backgroundColor: bg,
+    padding: 0,
+    fontFamily: "Helvetica",
+    color: "#ddd",
+  },
+  coverContainer: {
+    flex: 1,
+    justifyContent: "space-between",
+    padding: 50,
+  },
+  coverTopBrand: {
+    fontSize: 8,
+    letterSpacing: 4,
+    color: gold,
+    textTransform: "uppercase",
+  },
+  coverCenter: {
+    alignItems: "flex-start",
+  },
+  coverLabel: {
+    fontSize: 7,
+    letterSpacing: 5,
+    color: gold,
+    textTransform: "uppercase",
+    marginBottom: 20,
+  },
+  coverTitle: {
+    fontSize: 56,
+    fontFamily: "Helvetica-Light",
+    color: "#f5f5f5",
+    letterSpacing: -1.5,
+    lineHeight: 1,
+  },
+  coverSubtitle: {
+    fontSize: 22,
+    fontFamily: "Helvetica-Oblique",
+    color: "rgba(255,255,255,0.5)",
+    marginTop: 6,
+  },
+  coverLine: {
+    width: 50,
+    height: 1,
+    backgroundColor: gold,
+    marginTop: 28,
+    marginBottom: 28,
+  },
+  coverMeta: {
+    gap: 4,
+  },
+  coverMetaLabel: {
+    fontSize: 6.5,
+    letterSpacing: 2.5,
+    color: "rgba(255,255,255,0.35)",
+    textTransform: "uppercase",
+    marginBottom: 2,
+  },
+  coverMetaValue: {
+    fontSize: 9,
+    color: "rgba(255,255,255,0.85)",
+    letterSpacing: 0.5,
+  },
+  coverBottom: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+  },
+  coverConfidential: {
+    fontSize: 6.5,
+    letterSpacing: 3,
+    color: "rgba(255,255,255,0.2)",
+    textTransform: "uppercase",
+  },
+  coverNumber: {
+    fontSize: 120,
+    fontFamily: "Helvetica-Light",
+    color: "rgba(196,162,101,0.08)",
+    position: "absolute",
+    bottom: 20,
+    right: 50,
+    lineHeight: 1,
+  },
 
-  grid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
-  card: { width: "48%", backgroundColor: cardBg, borderRadius: 8, border: `1px solid ${border}`, marginBottom: 12, overflow: "hidden" },
-  cardImage: { height: 100, backgroundColor: "#161618" },
-  cardBody: { padding: 12 },
-  cardName: { fontSize: 11, fontWeight: 600, color: "#eee", marginBottom: 6 },
-  specRow: { flexDirection: "row", gap: 6, marginBottom: 3 },
-  specLabel: { fontSize: 7, color: gold, textTransform: "uppercase", letterSpacing: 1, width: 60, fontWeight: 600 },
-  specValue: { fontSize: 8, color: "#bbb", flex: 1 },
-  vendor: { fontSize: 7, color: "#444", textTransform: "uppercase", letterSpacing: 1, marginTop: 8, paddingTop: 6, borderTop: `1px solid ${border}` },
+  /* ══════ TABLE OF CONTENTS ══════ */
+  tocPage: {
+    backgroundColor: pageBg,
+    paddingTop: 80,
+    paddingBottom: 60,
+    paddingHorizontal: 60,
+    fontFamily: "Helvetica",
+    color: inkSoft,
+  },
+  tocHeader: {
+    marginBottom: 40,
+    borderBottom: `1px solid ${divider}`,
+    paddingBottom: 20,
+  },
+  tocLabel: {
+    fontSize: 7,
+    letterSpacing: 5,
+    color: gold,
+    textTransform: "uppercase",
+    marginBottom: 10,
+  },
+  tocTitle: {
+    fontSize: 32,
+    fontFamily: "Helvetica-Light",
+    color: ink,
+    letterSpacing: -0.5,
+  },
+  tocEntry: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    paddingVertical: 10,
+    borderBottom: `0.5px solid ${divider}`,
+  },
+  tocNumber: {
+    fontSize: 10,
+    fontFamily: "Helvetica-Bold",
+    color: gold,
+    width: 32,
+    letterSpacing: 1,
+  },
+  tocName: {
+    fontSize: 13,
+    fontFamily: "Helvetica-Light",
+    color: ink,
+    flex: 1,
+  },
+  tocCount: {
+    fontSize: 8,
+    color: inkLight,
+    letterSpacing: 1,
+    textTransform: "uppercase",
+  },
 
-  footer: { textAlign: "center", paddingTop: 20, borderTop: `1px solid ${border}` },
-  footerText: { fontSize: 7, color: "#444" },
+  /* ══════ SECTION BREAK ══════ */
+  sectionBreakPage: {
+    backgroundColor: pageBg,
+    padding: 60,
+    fontFamily: "Helvetica",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  sectionNumberBig: {
+    fontSize: 140,
+    fontFamily: "Helvetica-Light",
+    color: gold,
+    opacity: 0.15,
+    letterSpacing: -4,
+    marginBottom: -60,
+  },
+  sectionLabelSmall: {
+    fontSize: 7,
+    letterSpacing: 5,
+    color: gold,
+    textTransform: "uppercase",
+    marginBottom: 12,
+  },
+  sectionMainTitle: {
+    fontSize: 44,
+    fontFamily: "Helvetica-Light",
+    color: ink,
+    letterSpacing: -1,
+    textAlign: "center",
+  },
+  sectionTagline: {
+    fontSize: 9,
+    color: inkLight,
+    marginTop: 10,
+    letterSpacing: 2,
+    textTransform: "uppercase",
+  },
+  sectionDivider: {
+    width: 60,
+    height: 1,
+    backgroundColor: gold,
+    marginTop: 24,
+  },
+
+  /* ══════ CONTENT PAGES ══════ */
+  pageHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 30,
+    paddingBottom: 16,
+    borderBottom: `0.5px solid ${divider}`,
+  },
+  pageHeaderLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  pageHeaderNumber: {
+    fontSize: 10,
+    fontFamily: "Helvetica-Bold",
+    color: gold,
+    letterSpacing: 1,
+  },
+  pageHeaderTitle: {
+    fontSize: 10,
+    color: ink,
+    letterSpacing: 2,
+    textTransform: "uppercase",
+  },
+  pageHeaderRight: {
+    fontSize: 7,
+    color: inkLight,
+    letterSpacing: 2,
+    textTransform: "uppercase",
+  },
+
+  /* ══════ SUBCATEGORY HEADER ══════ */
+  subHeader: {
+    marginTop: 16,
+    marginBottom: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  subHeaderLine: {
+    flex: 1,
+    height: 0.5,
+    backgroundColor: divider,
+  },
+  subHeaderText: {
+    fontSize: 8,
+    color: gold,
+    letterSpacing: 3,
+    textTransform: "uppercase",
+    fontFamily: "Helvetica-Bold",
+  },
+
+  /* ══════ ITEM CARDS ══════ */
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+  },
+  card: {
+    width: "48.5%",
+    backgroundColor: card,
+    borderRadius: 4,
+    border: `0.5px solid ${divider}`,
+    marginBottom: 12,
+    overflow: "hidden",
+  },
+  cardImage: {
+    height: 130,
+    backgroundColor: "#f0ebe0",
+    position: "relative",
+  },
+  cardImageInner: {
+    width: "100%",
+    height: 130,
+    objectFit: "cover",
+  },
+  cardPlaceholder: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#e8ded0",
+  },
+  cardPlaceholderText: {
+    fontSize: 10,
+    color: inkLight,
+    fontFamily: "Helvetica-Oblique",
+    textAlign: "center",
+    paddingHorizontal: 12,
+  },
+  cardCategoryBadge: {
+    position: "absolute",
+    top: 8,
+    left: 8,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    backgroundColor: "rgba(255,255,255,0.92)",
+    borderRadius: 2,
+  },
+  cardCategoryText: {
+    fontSize: 6.5,
+    color: gold,
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
+    fontFamily: "Helvetica-Bold",
+  },
+  cardBody: {
+    padding: 12,
+  },
+  cardName: {
+    fontSize: 11,
+    fontFamily: "Helvetica-Bold",
+    color: ink,
+    marginBottom: 2,
+    lineHeight: 1.2,
+  },
+  cardRoom: {
+    fontSize: 6.5,
+    color: inkLight,
+    letterSpacing: 1,
+    textTransform: "uppercase",
+    marginBottom: 8,
+  },
+  cardDivider: {
+    height: 0.5,
+    backgroundColor: divider,
+    marginVertical: 6,
+  },
+  specRow: {
+    flexDirection: "row",
+    gap: 6,
+    marginBottom: 3,
+  },
+  specLabel: {
+    fontSize: 6,
+    color: gold,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    width: 50,
+    fontFamily: "Helvetica-Bold",
+    paddingTop: 1,
+  },
+  specValue: {
+    fontSize: 8,
+    color: inkSoft,
+    flex: 1,
+    lineHeight: 1.3,
+  },
+  vendor: {
+    fontSize: 6.5,
+    color: inkLight,
+    textTransform: "uppercase",
+    letterSpacing: 1.5,
+    marginTop: 8,
+    paddingTop: 6,
+    borderTop: `0.5px solid ${divider}`,
+    fontFamily: "Helvetica-Bold",
+  },
+
+  /* ══════ FOOTER ══════ */
+  footer: {
+    position: "absolute",
+    bottom: 30,
+    left: 50,
+    right: 50,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingTop: 10,
+    borderTop: `0.5px solid ${divider}`,
+  },
+  footerBrand: {
+    fontSize: 6.5,
+    letterSpacing: 2.5,
+    color: gold,
+    textTransform: "uppercase",
+    fontFamily: "Helvetica-Bold",
+  },
+  footerMeta: {
+    fontSize: 6.5,
+    color: inkLight,
+    letterSpacing: 1.5,
+    textTransform: "uppercase",
+  },
+  pageNumber: {
+    fontSize: 6.5,
+    color: inkLight,
+    letterSpacing: 1,
+  },
 });
 
 interface ProjectData {
   name: string;
   address: string | null;
   standard: string | null;
+  client: string | null;
   coverImage: string | null;
   sections: {
     name: string;
@@ -56,83 +418,198 @@ interface ProjectData {
   }[];
 }
 
-export function CatalogPDF({ project }: { project: ProjectData }) {
+function Footer({ projectName }: { projectName: string }) {
   return (
-    <Document>
-      {/* Cover */}
-      <Page size="A4" style={{ ...s.page, padding: 0 }}>
-        {/* Cover background image */}
-        {project.coverImage && (
-          <Image
-            src={project.coverImage}
-            style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover" }}
-          />
-        )}
-        {/* Dark overlay for readability */}
-        <View style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", backgroundColor: project.coverImage ? "rgba(10,10,14,0.65)" : bg }} />
+    <View style={s.footer} fixed>
+      <Text style={s.footerBrand}>Omega Custom Homes</Text>
+      <Text style={s.footerMeta}>{projectName} · Confidential</Text>
+      <Text
+        style={s.pageNumber}
+        render={({ pageNumber, totalPages }) => `${String(pageNumber).padStart(2, "0")} / ${String(totalPages).padStart(2, "0")}`}
+      />
+    </View>
+  );
+}
 
-        <View style={{ ...s.cover, padding: 40 }}>
-          <Text style={s.coverLabel}>Finishes &amp; Materials Catalog</Text>
-          <Text style={s.coverTitle}>{project.name.split("—")[0]?.trim()}</Text>
-          {project.name.includes("—") && (
-            <Text style={s.coverSubtitle}>{project.name.split("—")[1]?.trim()}</Text>
-          )}
-          <View style={s.coverLine} />
-          {project.address && <Text style={s.coverAddress}>{project.address.toUpperCase()}</Text>}
-          {project.standard && <Text style={{ ...s.coverAddress, marginTop: 4 }}>{project.standard.toUpperCase()}</Text>}
+export function CatalogPDF({ project }: { project: ProjectData }) {
+  const titleParts = project.name.split("—");
+  const title = titleParts[0]?.trim() || project.name;
+  const subtitle = titleParts[1]?.trim();
+
+  return (
+    <Document
+      title={`${project.name} — Finishes Catalog`}
+      author="Omega Custom Homes"
+      subject="Finishes & Materials Catalog"
+      creator="Omega"
+    >
+      {/* ═══════════════ COVER ═══════════════ */}
+      <Page size="A4" style={s.coverPage}>
+        <View style={s.coverContainer}>
+          {/* Top: Brand */}
+          <Text style={s.coverTopBrand}>Omega Custom Homes</Text>
+
+          {/* Center: Title block */}
+          <View style={s.coverCenter}>
+            <Text style={s.coverLabel}>Finishes &amp; Materials Catalog</Text>
+            <Text style={s.coverTitle}>{title}</Text>
+            {subtitle && <Text style={s.coverSubtitle}>{subtitle}</Text>}
+            <View style={s.coverLine} />
+
+            <View style={s.coverMeta}>
+              {project.address && (
+                <View>
+                  <Text style={s.coverMetaLabel}>Location</Text>
+                  <Text style={s.coverMetaValue}>{project.address}</Text>
+                </View>
+              )}
+              {project.client && (
+                <View style={{ marginTop: 14 }}>
+                  <Text style={s.coverMetaLabel}>Client</Text>
+                  <Text style={s.coverMetaValue}>{project.client}</Text>
+                </View>
+              )}
+              {project.standard && (
+                <View style={{ marginTop: 14 }}>
+                  <Text style={s.coverMetaLabel}>Standard</Text>
+                  <Text style={s.coverMetaValue}>{project.standard}</Text>
+                </View>
+              )}
+            </View>
+          </View>
+
+          {/* Bottom: Confidential + big year */}
+          <View style={s.coverBottom}>
+            <Text style={s.coverConfidential}>Confidential</Text>
+            <Text style={s.coverConfidential}>
+              {new Date().getFullYear()}
+            </Text>
+          </View>
         </View>
       </Page>
 
-      {/* Sections */}
-      {project.sections.map((section, sIdx) => (
-        <Page key={sIdx} size="A4" style={s.page} wrap>
-          {/* Section header */}
-          <View style={s.sectionBreak}>
-            <Text style={s.sectionTitle}>{section.name}</Text>
-            {section.subtitle && <Text style={s.sectionSub}>{section.subtitle}</Text>}
-            <View style={s.sectionLine} />
-          </View>
+      {/* ═══════════════ TABLE OF CONTENTS ═══════════════ */}
+      <Page size="A4" style={s.tocPage}>
+        <View style={s.tocHeader}>
+          <Text style={s.tocLabel}>Contents</Text>
+          <Text style={s.tocTitle}>What&rsquo;s Inside</Text>
+        </View>
 
-          {/* Items grid */}
-          <View style={s.grid}>
-            {section.items.map((item, iIdx) => (
-              <View key={iIdx} style={s.card} wrap={false}>
-                {/* Image or color block */}
-                <View style={s.cardImage}>
-                  {item.images[0] ? (
-                    <Image src={item.images[0].url} style={{ width: "100%", height: 100, objectFit: "cover" }} />
-                  ) : (
-                    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-                      <Text style={{ fontSize: 10, color: "rgba(255,255,255,0.4)" }}>
-                        {item.finishType || item.category || ""}
+        <View>
+          {project.sections.map((section, idx) => (
+            <View key={idx} style={s.tocEntry}>
+              <Text style={s.tocNumber}>{String(idx + 1).padStart(2, "0")}</Text>
+              <Text style={s.tocName}>{section.name}</Text>
+              <Text style={s.tocCount}>{section.items.length} {section.items.length === 1 ? "item" : "items"}</Text>
+            </View>
+          ))}
+        </View>
+
+        <Footer projectName={project.name} />
+      </Page>
+
+      {/* ═══════════════ SECTIONS ═══════════════ */}
+      {project.sections.map((section, sIdx) => {
+        const number = String(sIdx + 1).padStart(2, "0");
+        // Group items by sub-category (inferred from category string)
+        const subGroups = new Map<string, typeof section.items>();
+        for (const it of section.items) {
+          const sub = it.category || "General";
+          if (!subGroups.has(sub)) subGroups.set(sub, []);
+          subGroups.get(sub)!.push(it);
+        }
+
+        return (
+          <React.Fragment key={sIdx}>
+            {/* Section break page */}
+            <Page size="A4" style={s.sectionBreakPage}>
+              <Text style={s.sectionNumberBig}>{number}</Text>
+              <Text style={s.sectionLabelSmall}>Section {number}</Text>
+              <Text style={s.sectionMainTitle}>{section.name}</Text>
+              {section.subtitle && <Text style={s.sectionTagline}>{section.subtitle}</Text>}
+              <View style={s.sectionDivider} />
+              <Footer projectName={project.name} />
+            </Page>
+
+            {/* Content page(s) */}
+            <Page size="A4" style={s.page} wrap>
+              {/* Running header */}
+              <View style={s.pageHeader} fixed>
+                <View style={s.pageHeaderLeft}>
+                  <Text style={s.pageHeaderNumber}>{number}</Text>
+                  <Text style={s.pageHeaderTitle}>{section.name}</Text>
+                </View>
+                <Text style={s.pageHeaderRight}>
+                  {section.items.length} {section.items.length === 1 ? "Item" : "Items"}
+                </Text>
+              </View>
+
+              {/* Grouped content */}
+              {[...subGroups.entries()].map(([subName, subItems], gIdx) => (
+                <View key={gIdx} wrap>
+                  {subGroups.size > 1 && (
+                    <View style={s.subHeader}>
+                      <Text style={s.subHeaderText}>{subName}</Text>
+                      <View style={s.subHeaderLine} />
+                      <Text style={{ ...s.subHeaderText, color: inkLight }}>
+                        {String(subItems.length).padStart(2, "0")}
                       </Text>
                     </View>
                   )}
-                </View>
 
-                <View style={s.cardBody}>
-                  <Text style={s.cardName}>{item.name}</Text>
-                  {item.category && (
-                    <Text style={{ fontSize: 7, color: gold, marginBottom: 4 }}>{item.category}{item.roomLocation ? ` · ${item.roomLocation}` : ""}</Text>
-                  )}
-                  {item.specs.map((spec, si) => (
-                    <View key={si} style={s.specRow}>
-                      <Text style={s.specLabel}>{spec.label}</Text>
-                      <Text style={s.specValue}>{spec.value}</Text>
-                    </View>
-                  ))}
-                  {item.vendorName && <Text style={s.vendor}>{item.vendorName}</Text>}
-                </View>
-              </View>
-            ))}
-          </View>
+                  <View style={s.grid}>
+                    {subItems.map((item, iIdx) => (
+                      <View key={iIdx} style={s.card} wrap={false}>
+                        {/* Image */}
+                        <View style={s.cardImage}>
+                          {item.images[0] ? (
+                            <Image src={item.images[0].url} style={s.cardImageInner} />
+                          ) : (
+                            <View style={s.cardPlaceholder}>
+                              <Text style={s.cardPlaceholderText}>
+                                {item.finishType || item.category || "—"}
+                              </Text>
+                            </View>
+                          )}
+                          {item.category && (
+                            <View style={s.cardCategoryBadge}>
+                              <Text style={s.cardCategoryText}>{item.category}</Text>
+                            </View>
+                          )}
+                        </View>
 
-          {/* Footer */}
-          <View style={s.footer} fixed>
-            <Text style={s.footerText}>Omega Custom Homes · {project.name} · Confidential</Text>
-          </View>
-        </Page>
-      ))}
+                        {/* Body */}
+                        <View style={s.cardBody}>
+                          <Text style={s.cardName}>{item.name}</Text>
+                          {item.roomLocation && (
+                            <Text style={s.cardRoom}>{item.roomLocation}</Text>
+                          )}
+
+                          {item.specs.length > 0 && (
+                            <>
+                              <View style={s.cardDivider} />
+                              {item.specs.slice(0, 4).map((spec, si) => (
+                                <View key={si} style={s.specRow}>
+                                  <Text style={s.specLabel}>{spec.label}</Text>
+                                  <Text style={s.specValue}>{spec.value}</Text>
+                                </View>
+                              ))}
+                            </>
+                          )}
+
+                          {item.vendorName && <Text style={s.vendor}>{item.vendorName}</Text>}
+                        </View>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              ))}
+
+              <Footer projectName={project.name} />
+            </Page>
+          </React.Fragment>
+        );
+      })}
     </Document>
   );
 }
