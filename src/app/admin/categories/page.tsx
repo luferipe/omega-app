@@ -60,8 +60,37 @@ export default async function CategoriesPage() {
     "use server";
     const id = formData.get("id") as string;
     if (!id) return;
-    // Cascade deletes children via schema; items get categoryId set to null via SetNull
     await prisma.category.delete({ where: { id } });
+    revalidatePath("/admin/categories");
+  }
+
+  async function moveCategory(formData: FormData) {
+    "use server";
+    const id = formData.get("id") as string;
+    const direction = formData.get("direction") as string; // "up" or "down"
+    if (!id || !direction) return;
+
+    const cat = await prisma.category.findUnique({ where: { id } });
+    if (!cat) return;
+
+    // Find siblings (same parent)
+    const siblings = await prisma.category.findMany({
+      where: { parentId: cat.parentId },
+      orderBy: { sortOrder: "asc" },
+    });
+
+    const idx = siblings.findIndex((s) => s.id === id);
+    const swapIdx = direction === "up" ? idx - 1 : idx + 1;
+    if (swapIdx < 0 || swapIdx >= siblings.length) return;
+
+    // Swap sortOrder values
+    const a = siblings[idx];
+    const b = siblings[swapIdx];
+    await prisma.$transaction([
+      prisma.category.update({ where: { id: a.id }, data: { sortOrder: b.sortOrder } }),
+      prisma.category.update({ where: { id: b.id }, data: { sortOrder: a.sortOrder } }),
+    ]);
+
     revalidatePath("/admin/categories");
   }
 
@@ -72,7 +101,7 @@ export default async function CategoriesPage() {
           Categories
         </h2>
         <p className="text-xs mt-1" style={{ color: "#999" }}>
-          Manage product categories and subcategories
+          Manage product categories and subcategories. Use ↑↓ arrows to reorder — this controls the order in catalog and PDF.
         </p>
       </div>
 
@@ -90,6 +119,7 @@ export default async function CategoriesPage() {
         createAction={createCategory}
         renameAction={renameCategory}
         deleteAction={deleteCategory}
+        moveAction={moveCategory}
       />
     </AdminShell>
   );

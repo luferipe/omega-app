@@ -32,11 +32,13 @@ export default function CategoryManager({
   createAction,
   renameAction,
   deleteAction,
+  moveAction,
 }: {
   categories: Cat[];
   createAction: (fd: FormData) => void;
   renameAction: (fd: FormData) => void;
   deleteAction: (fd: FormData) => void;
+  moveAction: (fd: FormData) => void;
 }) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [editing, setEditing] = useState<string | null>(null);
@@ -132,6 +134,36 @@ export default function CategoryManager({
                     {isExpanded ? "−" : "+"}
                   </button>
 
+                  {!isEditing && (
+                    <div className="flex flex-col gap-[1px]">
+                      <form action={moveAction}>
+                        <input type="hidden" name="id" value={cat.id} />
+                        <input type="hidden" name="direction" value="up" />
+                        <button
+                          type="submit"
+                          disabled={categories[0].id === cat.id}
+                          className="w-5 h-4 flex items-center justify-center rounded text-[10px] disabled:opacity-20"
+                          style={{ background: "rgba(255,255,255,.04)", color: "#888" }}
+                          title="Move up"
+                        >
+                          ▲
+                        </button>
+                      </form>
+                      <form action={moveAction}>
+                        <input type="hidden" name="id" value={cat.id} />
+                        <input type="hidden" name="direction" value="down" />
+                        <button
+                          type="submit"
+                          disabled={categories[categories.length - 1].id === cat.id}
+                          className="w-5 h-4 flex items-center justify-center rounded text-[10px] disabled:opacity-20"
+                          style={{ background: "rgba(255,255,255,.04)", color: "#888" }}
+                          title="Move down"
+                        >
+                          ▼
+                        </button>
+                      </form>
+                    </div>
+                  )}
                   {isEditing ? (
                     <form action={renameAction} className="flex-1 flex gap-2">
                       <input type="hidden" name="id" value={cat.id} />
@@ -238,11 +270,41 @@ export default function CategoryManager({
                 {/* Children */}
                 {isExpanded && cat.children.length > 0 && (
                   <div className="pl-12" style={{ background: "rgba(0,0,0,.2)" }}>
-                    {cat.children.map((sub) => {
+                    {cat.children.map((sub, subIdx) => {
                       const subEditing = editing === sub.id;
                       return (
                         <div key={sub.id} className="flex items-center gap-3 px-5 py-2 border-t" style={{ borderColor: "rgba(255,255,255,.04)" }}>
                           <span style={{ color: "#666" }}>↳</span>
+                          {!subEditing && (
+                            <div className="flex flex-col gap-[1px]">
+                              <form action={moveAction}>
+                                <input type="hidden" name="id" value={sub.id} />
+                                <input type="hidden" name="direction" value="up" />
+                                <button
+                                  type="submit"
+                                  disabled={subIdx === 0}
+                                  className="w-5 h-4 flex items-center justify-center rounded text-[10px] disabled:opacity-20"
+                                  style={{ background: "rgba(255,255,255,.04)", color: "#888" }}
+                                  title="Move up"
+                                >
+                                  ▲
+                                </button>
+                              </form>
+                              <form action={moveAction}>
+                                <input type="hidden" name="id" value={sub.id} />
+                                <input type="hidden" name="direction" value="down" />
+                                <button
+                                  type="submit"
+                                  disabled={subIdx === cat.children.length - 1}
+                                  className="w-5 h-4 flex items-center justify-center rounded text-[10px] disabled:opacity-20"
+                                  style={{ background: "rgba(255,255,255,.04)", color: "#888" }}
+                                  title="Move down"
+                                >
+                                  ▼
+                                </button>
+                              </form>
+                            </div>
+                          )}
                           {subEditing ? (
                             <form action={renameAction} className="flex-1 flex gap-2">
                               <input type="hidden" name="id" value={sub.id} />
