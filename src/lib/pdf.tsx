@@ -259,108 +259,145 @@ const s = StyleSheet.create({
     fontFamily: "Helvetica-Bold",
   },
 
-  /* ══════ ITEM CARDS ══════ */
-  grid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12,
+  /* ══════ ITEM CARDS — editorial horizontal layout ══════ */
+  itemWrap: {
+    marginBottom: 22,
   },
-  card: {
-    width: "48.5%",
-    backgroundColor: card,
-    borderRadius: 4,
-    border: `0.5px solid ${divider}`,
-    marginBottom: 12,
+  item: {
+    flexDirection: "row",
+    gap: 18,
+    alignItems: "flex-start",
+  },
+  itemReverse: {
+    flexDirection: "row-reverse",
+    gap: 18,
+    alignItems: "flex-start",
+  },
+  itemImageWrap: {
+    width: "45%",
+    height: 150,
+    position: "relative",
+    backgroundColor: "#f0ebe0",
+    borderRadius: 3,
     overflow: "hidden",
   },
-  cardImage: {
-    height: 130,
-    backgroundColor: "#f0ebe0",
+  itemImageWide: {
+    width: "52%",
+    height: 170,
     position: "relative",
+    backgroundColor: "#f0ebe0",
+    borderRadius: 3,
+    overflow: "hidden",
   },
-  cardImageInner: {
+  itemImage: {
     width: "100%",
-    height: 130,
+    height: "100%",
     objectFit: "cover",
   },
-  cardPlaceholder: {
+  itemPlaceholder: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#e8ded0",
+    backgroundColor: "#ebe0ce",
   },
-  cardPlaceholderText: {
-    fontSize: 10,
+  itemPlaceholderText: {
+    fontSize: 11,
     color: inkLight,
     fontFamily: "Helvetica-Oblique",
     textAlign: "center",
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
+    letterSpacing: 1,
   },
-  cardCategoryBadge: {
+  itemBadge: {
     position: "absolute",
-    top: 8,
-    left: 8,
-    paddingHorizontal: 6,
+    top: 10,
+    left: 10,
+    paddingHorizontal: 7,
     paddingVertical: 3,
-    backgroundColor: "rgba(255,255,255,0.92)",
+    backgroundColor: "rgba(255,255,255,0.95)",
     borderRadius: 2,
   },
-  cardCategoryText: {
+  itemBadgeText: {
     fontSize: 6.5,
     color: gold,
-    letterSpacing: 1.2,
+    letterSpacing: 1.5,
     textTransform: "uppercase",
     fontFamily: "Helvetica-Bold",
   },
-  cardBody: {
-    padding: 12,
+  itemContent: {
+    flex: 1,
+    paddingTop: 4,
   },
-  cardName: {
-    fontSize: 11,
+  itemContentWide: {
+    flex: 1,
+    paddingTop: 4,
+  },
+  itemIndex: {
+    fontSize: 7,
+    fontFamily: "Helvetica-Bold",
+    color: gold,
+    letterSpacing: 2,
+    marginBottom: 6,
+  },
+  itemName: {
+    fontSize: 14,
     fontFamily: "Helvetica-Bold",
     color: ink,
-    marginBottom: 2,
     lineHeight: 1.2,
+    letterSpacing: -0.2,
+    marginBottom: 4,
   },
-  cardRoom: {
-    fontSize: 6.5,
+  itemRoom: {
+    fontSize: 7,
     color: inkLight,
-    letterSpacing: 1,
+    letterSpacing: 1.8,
     textTransform: "uppercase",
+    fontFamily: "Helvetica-Oblique",
     marginBottom: 8,
   },
-  cardDivider: {
-    height: 0.5,
-    backgroundColor: divider,
-    marginVertical: 6,
+  itemDescription: {
+    fontSize: 9.5,
+    color: inkSoft,
+    lineHeight: 1.55,
+    marginTop: 10,
+    marginBottom: 12,
+    letterSpacing: 0.1,
+  },
+  itemDivider: {
+    width: 28,
+    height: 1,
+    backgroundColor: gold,
+    marginTop: 10,
+    marginBottom: 10,
   },
   specRow: {
     flexDirection: "row",
-    gap: 6,
-    marginBottom: 3,
+    gap: 10,
+    marginBottom: 5,
+    alignItems: "flex-start",
   },
   specLabel: {
-    fontSize: 6,
+    fontSize: 6.5,
     color: gold,
     textTransform: "uppercase",
-    letterSpacing: 1,
-    width: 50,
+    letterSpacing: 1.5,
+    width: 62,
     fontFamily: "Helvetica-Bold",
     paddingTop: 1,
   },
   specValue: {
-    fontSize: 8,
-    color: inkSoft,
+    fontSize: 9,
+    color: ink,
     flex: 1,
-    lineHeight: 1.3,
+    lineHeight: 1.45,
   },
   vendor: {
-    fontSize: 6.5,
+    fontSize: 7,
     color: inkLight,
     textTransform: "uppercase",
-    letterSpacing: 1.5,
-    marginTop: 8,
-    paddingTop: 6,
+    letterSpacing: 2,
+    marginTop: 12,
+    paddingTop: 8,
     borderTop: `0.5px solid ${divider}`,
     fontFamily: "Helvetica-Bold",
   },
@@ -557,51 +594,66 @@ export function CatalogPDF({ project }: { project: ProjectData }) {
                     </View>
                   )}
 
-                  <View style={s.grid}>
-                    {subItems.map((item, iIdx) => (
-                      <View key={iIdx} style={s.card} wrap={false}>
-                        {/* Image */}
-                        <View style={s.cardImage}>
-                          {item.images[0] ? (
-                            <Image src={item.images[0].url} style={s.cardImageInner} />
-                          ) : (
-                            <View style={s.cardPlaceholder}>
-                              <Text style={s.cardPlaceholderText}>
-                                {item.finishType || item.category || "—"}
-                              </Text>
-                            </View>
-                          )}
-                          {item.category && (
-                            <View style={s.cardCategoryBadge}>
-                              <Text style={s.cardCategoryText}>{item.category}</Text>
-                            </View>
-                          )}
-                        </View>
+                  {subItems.map((item, iIdx) => {
+                    // Asymmetric layout: alternate image side + vary image size every 3rd item
+                    const reverse = iIdx % 2 === 1;
+                    const wide = iIdx % 3 === 0;
+                    const itemNum = String(iIdx + 1).padStart(2, "0");
 
-                        {/* Body */}
-                        <View style={s.cardBody}>
-                          <Text style={s.cardName}>{item.name}</Text>
-                          {item.roomLocation && (
-                            <Text style={s.cardRoom}>{item.roomLocation}</Text>
-                          )}
+                    return (
+                      <View
+                        key={iIdx}
+                        style={[s.itemWrap, { marginLeft: reverse ? 0 : iIdx % 4 === 2 ? 18 : 0, marginRight: reverse && iIdx % 4 === 3 ? 18 : 0 }]}
+                        wrap={false}
+                      >
+                        <View style={reverse ? s.itemReverse : s.item}>
+                          {/* Image */}
+                          <View style={wide ? s.itemImageWide : s.itemImageWrap}>
+                            {item.images[0] ? (
+                              <Image src={item.images[0].url} style={s.itemImage} />
+                            ) : (
+                              <View style={s.itemPlaceholder}>
+                                <Text style={s.itemPlaceholderText}>
+                                  {item.finishType || item.category || "—"}
+                                </Text>
+                              </View>
+                            )}
+                            {item.category && (
+                              <View style={s.itemBadge}>
+                                <Text style={s.itemBadgeText}>{item.category}</Text>
+                              </View>
+                            )}
+                          </View>
 
-                          {item.specs.length > 0 && (
-                            <>
-                              <View style={s.cardDivider} />
-                              {item.specs.slice(0, 4).map((spec, si) => (
-                                <View key={si} style={s.specRow}>
-                                  <Text style={s.specLabel}>{spec.label}</Text>
-                                  <Text style={s.specValue}>{spec.value}</Text>
-                                </View>
-                              ))}
-                            </>
-                          )}
+                          {/* Content */}
+                          <View style={wide ? s.itemContentWide : s.itemContent}>
+                            <Text style={s.itemIndex}>
+                              {number} · {itemNum}
+                            </Text>
+                            <Text style={s.itemName}>{item.name}</Text>
+                            {item.roomLocation && (
+                              <Text style={s.itemRoom}>{item.roomLocation}</Text>
+                            )}
 
-                          {item.vendorName && <Text style={s.vendor}>{item.vendorName}</Text>}
+                            <View style={s.itemDivider} />
+
+                            {item.specs.length > 0 && (
+                              <View>
+                                {item.specs.slice(0, 5).map((spec, si) => (
+                                  <View key={si} style={s.specRow}>
+                                    <Text style={s.specLabel}>{spec.label}</Text>
+                                    <Text style={s.specValue}>{spec.value}</Text>
+                                  </View>
+                                ))}
+                              </View>
+                            )}
+
+                            {item.vendorName && <Text style={s.vendor}>{item.vendorName}</Text>}
+                          </View>
                         </View>
                       </View>
-                    ))}
-                  </View>
+                    );
+                  })}
                 </View>
               ))}
 
