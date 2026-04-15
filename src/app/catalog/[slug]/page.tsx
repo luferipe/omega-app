@@ -201,11 +201,17 @@ export default async function CatalogPage({ params }: { params: Promise<{ slug: 
           {/* Disclaimer */}
           <div
             className="mt-12 pt-8 mx-auto max-w-[700px]"
-            style={{ borderTop: "1px solid rgba(255,255,255,.04)" }}
+            style={{ borderTop: "1px solid rgba(255,255,255,.06)" }}
           >
             <p
-              className="text-[10px] italic leading-[1.7]"
-              style={{ color: "#444", fontFamily: "'Cormorant Garamond', serif" }}
+              className="text-[9px] uppercase tracking-[.3em] mb-4"
+              style={{ color: "#c4a265", fontWeight: 600 }}
+            >
+              Disclaimer
+            </p>
+            <p
+              className="text-[13px] italic leading-[1.8]"
+              style={{ color: "#888", fontFamily: "'Cormorant Garamond', serif" }}
             >
               All descriptions, plans, finishes, features, and options are subject to change,
               modification, or substitution at the builder&rsquo;s sole discretion without prior notice.
