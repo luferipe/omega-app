@@ -185,36 +185,36 @@ export default async function CatalogPage({ params }: { params: Promise<{ slug: 
       {/* Footer */}
       <footer className="py-20 border-t" style={{ borderColor: "rgba(255,255,255,.05)" }}>
         <div className="max-w-[900px] mx-auto px-6 text-center">
-          <h3
-            className="text-2xl font-light"
-            style={{ fontFamily: "'Cormorant Garamond', serif", color: "#c4a265" }}
-          >
-            Omega Custom Homes
-          </h3>
-          <p className="text-xs mt-2" style={{ color: "#444" }}>
-            {project.name} &bull; {project.address}
-          </p>
-          <p className="text-[10px] mt-1 tracking-[.3em] uppercase" style={{ color: "#333" }}>
-            Confidential
-          </p>
-
-          {/* Disclaimer */}
-          <div
-            className="mt-12 pt-8 mx-auto max-w-[700px]"
-            style={{ borderTop: "1px solid rgba(255,255,255,.06)" }}
-          >
+          {/* Disclaimer — first */}
+          <div className="mx-auto max-w-[760px] mb-16">
             <p
-              className="text-[9px] uppercase tracking-[.3em] mb-4"
+              className="text-[10px] uppercase tracking-[.35em] mb-5"
               style={{ color: "#c4a265", fontWeight: 600 }}
             >
               Disclaimer
             </p>
             <p
-              className="text-[13px] italic leading-[1.8]"
-              style={{ color: "#888", fontFamily: "'Cormorant Garamond', serif" }}
+              className="text-[17px] md:text-[19px] italic leading-[1.7]"
+              style={{ color: "#b8b8b8", fontFamily: "'Cormorant Garamond', serif" }}
             >
               All descriptions, plans, finishes, features, and options are subject to change,
               modification, or substitution at the builder&rsquo;s sole discretion without prior notice.
+            </p>
+          </div>
+
+          {/* Brand — below disclaimer */}
+          <div className="pt-12" style={{ borderTop: "1px solid rgba(255,255,255,.06)" }}>
+            <h3
+              className="text-2xl font-light"
+              style={{ fontFamily: "'Cormorant Garamond', serif", color: "#c4a265" }}
+            >
+              Omega Custom Homes
+            </h3>
+            <p className="text-xs mt-2" style={{ color: "#666" }}>
+              {project.name} &bull; {project.address}
+            </p>
+            <p className="text-[10px] mt-2 tracking-[.3em] uppercase" style={{ color: "#555" }}>
+              Confidential
             </p>
           </div>
         </div>
